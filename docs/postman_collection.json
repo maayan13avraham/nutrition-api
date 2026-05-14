@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "Nutrition Planning API",
+    "description": "Backend API for Smart Nutrition Planning System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "GET all users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "admin" }],
+            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+          }
+        },
+        {
+          "name": "GET user by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "admin" }],
+            "url": { "raw": "http://localhost:3000/users/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "1"] }
+          }
+        },
+        {
+          "name": "GET user not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "admin" }],
+            "url": { "raw": "http://localhost:3000/users/999", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "999"] }
+          }
+        },
+        {
+          "name": "POST create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-user-role", "value": "admin" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Oren\",\n  \"lastName\": \"Katz\",\n  \"userRole\": \"user\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+          }
+        },
+        {
+          "name": "POST create user - validation error (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-user-role", "value": "admin" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"Katz\",\n  \"userRole\": \"user\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+          }
+        },
+        {
+          "name": "PUT update user",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "x-user-role", "value": "admin" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Dana\",\n  \"lastName\": \"Ben-Ami\",\n  \"userRole\": \"nutritionist\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/users/3", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "3"] }
+          }
+        },
+        {
+          "name": "DELETE user",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-user-role", "value": "admin" }],
+            "url": { "raw": "http://localhost:3000/users/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "5"] }
+          }
+        },
+        {
+          "name": "DELETE user - forbidden (403)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-user-role", "value": "nutritionist" }],
+            "url": { "raw": "http://localhost:3000/users/4", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "4"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "GET all recipes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "user" }],
+            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+          }
+        },
+        {
+          "name": "GET recipes filter by mealType",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "user" }],
+            "url": {
+              "raw": "http://localhost:3000/recipes?mealType=breakfast",
+              "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"],
+              "query": [{ "key": "mealType", "value": "breakfast" }]
+            }
+          }
+        },
+        {
+          "name": "GET recipes filter vegetarian",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "user" }],
+            "url": {
+              "raw": "http://localhost:3000/recipes?isVegetarian=true",
+              "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"],
+              "query": [{ "key": "isVegetarian", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "GET recipe by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "user" }],
+            "url": { "raw": "http://localhost:3000/recipes/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "1"] }
+          }
+        },
+        {
+          "name": "GET recipe not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-user-role", "value": "user" }],
+            "url": { "raw": "http://localhost:3000/recipes/999", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "999"] }
+          }
+        },
+        {
+          "name": "POST create recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-user-role", "value": "nutritionist" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"סלט ירקות טרי\",\n  \"description\": \"סלט ירקות פשוט וטעים\",\n  \"mealType\": \"lunch\",\n  \"calories\": 200,\n  \"protein\": 5,\n  \"carbs\": 25,\n  \"fat\": 8,\n  \"isVegetarian\": true,\n  \"allergens\": [],\n  \"prepTime\": 10\n}"
+            },
+            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+          }
+        },
+        {
+          "name": "POST create recipe - validation error (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-user-role", "value": "nutritionist" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mealType\": \"lunch\",\n  \"calories\": 200,\n  \"protein\": 5,\n  \"carbs\": 25,\n  \"fat\": 8\n}"
+            },
+            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+          }
+        },
+        {
+          "name": "PUT update recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "x-user-role", "value": "nutritionist" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"שקשוקה ברוטב חריף\",\n  \"description\": \"שקשוקה ביתית עם פלפלים חריפים\",\n  \"mealType\": \"breakfast\",\n  \"calories\": 420,\n  \"protein\": 24,\n  \"carbs\": 38,\n  \"fat\": 16,\n  \"isVegetarian\": true,\n  \"allergens\": [\"eggs\"],\n  \"prepTime\": 25\n}"
+            },
+            "url": { "raw": "http://localhost:3000/recipes/2", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "2"] }
+          }
+        },
+        {
+          "name": "DELETE recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-user-role", "value": "admin" }],
+            "url": { "raw": "http://localhost:3000/recipes/6", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "6"] }
+          }
+        },
+        {
+          "name": "DELETE recipe - forbidden (403)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "x-user-role", "value": "nutritionist" }],
+            "url": { "raw": "http://localhost:3000/recipes/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "5"] }
+          }
+        }
+      ]
+    }
+  ]
+}

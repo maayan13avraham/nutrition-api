@@ -1,0 +1,41 @@
+let users = [
+  { userId: 1, firstName: 'Maya', lastName: 'Cohen', createDate: '2025-01-10T08:00:00Z', updateDate: '2025-01-10T08:00:00Z', userRole: 'admin' },
+  { userId: 2, firstName: 'Avi', lastName: 'Levi', createDate: '2025-01-12T09:00:00Z', updateDate: '2025-01-12T09:00:00Z', userRole: 'nutritionist' },
+  { userId: 3, firstName: 'Dana', lastName: 'Israeli', createDate: '2025-01-14T10:00:00Z', updateDate: '2025-01-14T10:00:00Z', userRole: 'user' },
+  { userId: 4, firstName: 'Yossi', lastName: 'Ben-David', createDate: '2025-01-15T11:00:00Z', updateDate: '2025-01-15T11:00:00Z', userRole: 'user' },
+  { userId: 5, firstName: 'Noa', lastName: 'Shapira', createDate: '2025-01-16T12:00:00Z', updateDate: '2025-01-16T12:00:00Z', userRole: 'nutritionist' }
+];
+
+let nextId = 6;
+
+function getAll() {
+  return users;
+}
+
+function getById(id) {
+  return users.find(u => u.userId === id);
+}
+
+function create(data) {
+  const now = new Date().toISOString();
+  const user = { userId: nextId++, ...data, createDate: now, updateDate: now };
+  users.push(user);
+  return user;
+}
+
+function update(id, data) {
+  const idx = users.findIndex(u => u.userId === id);
+  if (idx === -1) return null;
+  users[idx] = { ...users[idx], ...data, updateDate: new Date().toISOString() };
+  return users[idx];
+}
+
+function remove(id) {
+  const idx = users.findIndex(u => u.userId === id);
+  if (idx === -1) return null;
+  const removed = users[idx];
+  users.splice(idx, 1);
+  return removed;
+}
+
+module.exports = { getAll, getById, create, update, remove };
