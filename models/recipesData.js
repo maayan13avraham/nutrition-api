@@ -1,3 +1,4 @@
+// In-memory mock database array for recipes
 let recipes = [
   {
     recipeId: 1,
@@ -90,9 +91,10 @@ let recipes = [
     updateDate: '2025-01-12T08:30:00Z'
   }
 ];
-
+// Auto-increment counter for new recipe IDs
 let nextId = 7;
 
+// Fetch all recipes with optional mealType and vegetarian filters
 function getAll(filters) {
   let result = [...recipes];
   if (filters.mealType) {
@@ -105,10 +107,12 @@ function getAll(filters) {
   return result;
 }
 
+// Find and return a single recipe by its unique ID
 function getById(id) {
   return recipes.find(r => r.recipeId === id);
 }
 
+// Create a new recipe with generated ID and timestamps
 function create(data) {
   const now = new Date().toISOString();
   const recipe = { recipeId: nextId++, ...data, createDate: now, updateDate: now };
@@ -116,6 +120,7 @@ function create(data) {
   return recipe;
 }
 
+// Update existing recipe details by ID and refresh the update timestamp
 function update(id, data) {
   const idx = recipes.findIndex(r => r.recipeId === id);
   if (idx === -1) return null;
@@ -123,6 +128,7 @@ function update(id, data) {
   return recipes[idx];
 }
 
+// Remove a recipe from the array by its ID
 function remove(id) {
   const idx = recipes.findIndex(r => r.recipeId === id);
   if (idx === -1) return null;

@@ -1,8 +1,5 @@
 # Nutrition Planning System — Backend API
 
-Smart personalized nutrition planning system backend.
-Built with Node.js + Express, mock data only (in-memory).
-
 ## Quick Start
 
 ```bash

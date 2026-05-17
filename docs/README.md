@@ -1,9 +1,3 @@
-# Nutrition Planning System — Backend API
-
-A REST API backend for a smart personalized nutrition planning system.
-Built with Node.js + Express using in-memory mock data.
-
----
 
 ## Setup & Run
 

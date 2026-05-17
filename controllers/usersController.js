@@ -1,7 +1,9 @@
 const db = require('../models/usersData');
 
+// Array of allowed access levels and system roles
 const VALID_ROLES = ['admin', 'nutritionist', 'user'];
 
+// Validate required fields and options for user request bodies
 function validateBody(body) {
   const { firstName, lastName, userRole } = body;
   if (!firstName || typeof firstName !== 'string' || !firstName.trim())
@@ -13,18 +15,22 @@ function validateBody(body) {
   return null;
 }
 
+// Helper to format consistent success JSON responses
 function ok(res, data, status = 200) {
   return res.status(status).json({ success: true, data, error: null });
 }
 
+// Helper to format consistent error JSON responses
 function fail(res, code, message, details = {}, status = 400) {
   return res.status(status).json({ success: false, data: null, error: { code, message, details } });
 }
 
+// Fetch and return the list of all registered users
 function getUsers(req, res) {
   ok(res, db.getAll());
 }
 
+// Fetch a single user profile matching the URL ID parameter
 function getUserById(req, res) {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return fail(res, 'VALIDATION_ERROR', 'Invalid user ID', { field: 'id' });
@@ -33,6 +39,7 @@ function getUserById(req, res) {
   ok(res, user);
 }
 
+// Validate field data and register a new user in the system
 function createUser(req, res) {
   const err = validateBody(req.body);
   if (err) return fail(res, 'VALIDATION_ERROR', err.message, { field: err.field });
@@ -41,6 +48,7 @@ function createUser(req, res) {
   ok(res, { userId: user.userId }, 201);
 }
 
+// Validate and apply changes to an existing user profile
 function updateUser(req, res) {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return fail(res, 'VALIDATION_ERROR', 'Invalid user ID', { field: 'id' });
@@ -52,6 +60,7 @@ function updateUser(req, res) {
   ok(res, { userId: user.userId });
 }
 
+// Permanently delete a user account matching the request ID
 function deleteUser(req, res) {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return fail(res, 'VALIDATION_ERROR', 'Invalid user ID', { field: 'id' });

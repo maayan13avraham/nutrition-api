@@ -1,3 +1,4 @@
+// In-memory mock database array for users
 let users = [
   { userId: 1, firstName: 'Maya', lastName: 'Cohen', createDate: '2025-01-10T08:00:00Z', updateDate: '2025-01-10T08:00:00Z', userRole: 'admin' },
   { userId: 2, firstName: 'Avi', lastName: 'Levi', createDate: '2025-01-12T09:00:00Z', updateDate: '2025-01-12T09:00:00Z', userRole: 'nutritionist' },
@@ -6,16 +7,20 @@ let users = [
   { userId: 5, firstName: 'Noa', lastName: 'Shapira', createDate: '2025-01-16T12:00:00Z', updateDate: '2025-01-16T12:00:00Z', userRole: 'nutritionist' }
 ];
 
+// Auto-increment counter for new user IDs
 let nextId = 6;
 
+// Return the entire array of users
 function getAll() {
   return users;
 }
 
+// Find and return a single user by their unique ID
 function getById(id) {
   return users.find(u => u.userId === id);
 }
 
+// Create a new user with generated ID and timestamps
 function create(data) {
   const now = new Date().toISOString();
   const user = { userId: nextId++, ...data, createDate: now, updateDate: now };
@@ -23,6 +28,7 @@ function create(data) {
   return user;
 }
 
+// Update existing user details by ID and refresh the update timestamp
 function update(id, data) {
   const idx = users.findIndex(u => u.userId === id);
   if (idx === -1) return null;
@@ -30,6 +36,7 @@ function update(id, data) {
   return users[idx];
 }
 
+// Remove a user from the array by their ID
 function remove(id) {
   const idx = users.findIndex(u => u.userId === id);
   if (idx === -1) return null;
