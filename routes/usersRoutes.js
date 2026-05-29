@@ -3,6 +3,10 @@ const router = express.Router();
 // Import authorization middleware and controller logic
 const authorize = require('../middleware/auth');
 const ctrl = require('../controllers/usersController');
+// Get the currently logged-in user's profile (accessible by all roles)
+router.get('/me', authorize('admin', 'nutritionist', 'user'), ctrl.getMe);
+// Update email/password for the currently logged-in user
+router.put('/me', authorize('admin', 'nutritionist', 'user'), ctrl.updateMe);
 // Get a list of all users (restricted to admin and nutritionist)
 router.get('/', authorize('admin', 'nutritionist'), ctrl.getUsers);
 // Get a specific user's profile by ID (accessible by all roles)
