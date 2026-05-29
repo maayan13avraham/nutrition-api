@@ -1,0 +1,12 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #1b5e20;
+  color: #c8e6c9;
+  padding: 14px;
+  font-size: 0.9rem;
+  direction: rtl;
+  margin-top: auto;
+}

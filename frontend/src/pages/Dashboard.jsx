@@ -1,0 +1,313 @@
+import React, { useState, useEffect } from 'react';
+import { getRecipes } from '../services/recipesService';
+import { useLanguage } from '../context/LanguageContext';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Card from '../components/Card';
+import Table from '../components/Table';
+import RecipeModal from '../components/RecipeModal';
+import AiChat from '../components/AiChat';
+import './Dashboard.css';
+
+// Allowed goal keys used in the questionnaire goal dropdown
+const GOAL_VALUES = ['loss', 'gain', 'health'];
+// Allergen keys that map to translated labels in LanguageContext
+const ALLERGEN_KEYS = ['eggs', 'dairy', 'gluten', 'fish', 'nuts', 'soy'];
+
+// Calculate daily calorie target using a simplified Mifflin-St Jeor formula with activity factor
+function calcCalories(age, weight, height, goal) {
+  const bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+  const tdee = Math.round(bmr * 1.4);
+  const adjustments = { loss: -200, gain: 300, health: 0 };
+  return tdee + (adjustments[goal] || 0);
+}
+
+// Filter out recipes that conflict with the user's allergens or vegetarian preference
+function applyPreferences(recipes, profile) {
+  const allergies = profile.allergies || [];
+  return recipes.filter((r) => {
+    if (profile.vegetarianOnly && !r.isVegetarian) return false;
+    if (r.allergens && r.allergens.some((a) => allergies.includes(a))) return false;
+    return true;
+  });
+}
+
+// Select the single recipe of the given meal type whose calories are closest to the target
+function pickRecipe(recipes, mealType, targetPerMeal) {
+  const filtered = recipes.filter((r) => r.mealType === mealType);
+  if (!filtered.length) return null;
+  return [...filtered].sort(
+    (a, b) => Math.abs(a.calories - targetPerMeal) - Math.abs(b.calories - targetPerMeal)
+  )[0];
+}
+
+export default function Dashboard() {
+  const { t } = useLanguage();
+  // Key the stored profile by userId so each user has their own independent profile
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const profileKey = `nutritionProfile_${currentUser.userId ?? 'guest'}`;
+  // Restore a previously saved profile so the user does not need to refill the questionnaire
+  const savedProfile = JSON.parse(localStorage.getItem(profileKey) || 'null');
+  const [profile, setProfile] = useState(savedProfile);
+  const [form, setForm] = useState({
+    age: '', weight: '', height: '', goal: 'health',
+    allergies: [], vegetarianOnly: false,
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  // Stores user-chosen meal overrides; takes priority over the auto-picked default recipes
+  const [overrides, setOverrides] = useState({});
+
+  // Fetch all recipes from the server whenever a profile is set or updated
+  useEffect(() => {
+    if (!profile) return;
+    setLoading(true);
+    setFetchError('');
+    getRecipes()
+      .then((res) => setRecipes(res.data))
+      .catch(() => setFetchError(t.dashboard.fetchError))
+      .finally(() => setLoading(false));
+  }, [profile]);
+
+  // Validate age, weight, and height ranges before calculating the calorie target
+  function validateForm() {
+    const errs = {};
+    if (!form.age || isNaN(form.age) || form.age < 10 || form.age > 120) errs.age = t.dashboard.errAge;
+    if (!form.weight || isNaN(form.weight) || form.weight < 20 || form.weight > 300) errs.weight = t.dashboard.errWeight;
+    if (!form.height || isNaN(form.height) || form.height < 100 || form.height > 250) errs.height = t.dashboard.errHeight;
+    return errs;
+  }
+
+  // Update a single form field by its input name attribute
+  function handleFormChange(e) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  // Toggle an allergen key in the allergies array on or off
+  function handleAllergyToggle(key) {
+    setForm((prev) => ({
+      ...prev,
+      allergies: prev.allergies.includes(key)
+        ? prev.allergies.filter((a) => a !== key)
+        : [...prev.allergies, key],
+    }));
+  }
+
+  // Sync the vegetarianOnly checkbox state with the form
+  function handleVegetarianToggle(e) {
+    setForm((prev) => ({ ...prev, vegetarianOnly: e.target.checked }));
+  }
+
+  // Calculate calorie target, persist the profile to localStorage, and trigger recipe loading
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    const errs = validateForm();
+    if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+    const calories = calcCalories(Number(form.age), Number(form.weight), Number(form.height), form.goal);
+    const newProfile = { ...form, calories };
+    localStorage.setItem(profileKey, JSON.stringify(newProfile));
+    setProfile(newProfile);
+  }
+
+  // Derive compatible recipes and auto-selected meals from current profile and fetched data
+  const compatibleRecipes = profile ? applyPreferences(recipes, profile) : [];
+  const targetPerMeal = profile ? Math.round(profile.calories / 3) : 0;
+  const breakfast = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'breakfast', targetPerMeal) : null;
+  const lunch = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'lunch', targetPerMeal) : null;
+  const dinner = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'dinner', targetPerMeal) : null;
+
+  // Apply any user-selected overrides on top of the auto-picked default meals
+  const displayedBreakfast = overrides.breakfast || breakfast;
+  const displayedLunch = overrides.lunch || lunch;
+  const displayedDinner = overrides.dinner || dinner;
+  // Map of meal slot to the name of the currently displayed recipe, used to mark table rows
+  const currentNames = {
+    breakfast: displayedBreakfast?.name,
+    lunch: displayedLunch?.name,
+    dinner: displayedDinner?.name,
+  };
+
+  // Replace the auto-selected recipe for a meal slot with the user's chosen recipe
+  function handleSwap(recipe) {
+    setOverrides((prev) => ({ ...prev, [recipe.mealType]: recipe }));
+  }
+
+  // Column definitions for the compatible recipes table including the swap action column
+  const tableColumns = [
+    { key: 'name', label: t.table.name },
+    { key: 'mealType', label: t.table.mealType, render: (v) => t.table.mealTypes[v] || v },
+    { key: 'calories', label: t.table.calories },
+    { key: 'protein', label: t.table.protein },
+    { key: 'carbs', label: t.table.carbs },
+    { key: 'fat', label: t.table.fat },
+    { key: 'isVegetarian', label: t.table.vegetarian, render: (v) => (v ? '✅' : '❌') },
+    {
+      key: '_action',
+      label: t.table.swapLabel,
+      // Show a "current" badge for the active recipe or a swap button for all other compatible options
+      render: (_, row) => {
+        const isCurrent = currentNames[row.mealType] === row.name;
+        return isCurrent
+          ? <span className="current-meal-chip">{t.table.currentMeal}</span>
+          : <button className="swap-row-btn" onClick={() => handleSwap(row)}>{t.table.swapTo[row.mealType]}</button>;
+      },
+    },
+  ];
+
+  return (
+    <div className="page-layout">
+      <Navbar />
+      <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
+      <main className="dashboard-main">
+        {!profile ? (
+          // Phase 1: show the questionnaire if no profile exists yet
+          <section className="questionnaire">
+            <h2>{t.dashboard.qTitle}</h2>
+            <p className="q-subtitle">{t.dashboard.qSubtitle}</p>
+            <form onSubmit={handleFormSubmit} className="q-form" noValidate>
+
+              {/* Basic info */}
+              <div className="q-section-title">📋 {t.dashboard.ageLabel} / {t.dashboard.weightLabel} / {t.dashboard.heightLabel}</div>
+              <div className="q-row">
+                <div className="field-group">
+                  <label>{t.dashboard.ageLabel}</label>
+                  <input name="age" type="number" value={form.age} onChange={handleFormChange} placeholder="25" />
+                  {formErrors.age && <span className="error-msg">{formErrors.age}</span>}
+                </div>
+                <div className="field-group">
+                  <label>{t.dashboard.weightLabel}</label>
+                  <input name="weight" type="number" value={form.weight} onChange={handleFormChange} placeholder="70" />
+                  {formErrors.weight && <span className="error-msg">{formErrors.weight}</span>}
+                </div>
+                <div className="field-group">
+                  <label>{t.dashboard.heightLabel}</label>
+                  <input name="height" type="number" value={form.height} onChange={handleFormChange} placeholder="170" />
+                  {formErrors.height && <span className="error-msg">{formErrors.height}</span>}
+                </div>
+              </div>
+              <div className="field-group">
+                <label>{t.dashboard.goalLabel}</label>
+                <select name="goal" value={form.goal} onChange={handleFormChange}>
+                  {GOAL_VALUES.map((g) => (
+                    <option key={g} value={g}>{t.dashboard.goals[g]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Allergies */}
+              <div className="q-section-title">⚠️ {t.dashboard.allergiesTitle}</div>
+              <p className="q-section-subtitle">{t.dashboard.allergiesSubtitle}</p>
+              <div className="allergens-grid">
+                {ALLERGEN_KEYS.map((key) => (
+                  <label key={key} className={`allergen-chip ${form.allergies.includes(key) ? 'selected' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.allergies.includes(key)}
+                      onChange={() => handleAllergyToggle(key)}
+                    />
+                    {t.dashboard.allergens[key]}
+                  </label>
+                ))}
+              </div>
+
+              {/* Dietary preferences */}
+              <div className="q-section-title">🥗 {t.dashboard.preferencesTitle}</div>
+              <label className="pref-toggle">
+                <input type="checkbox" checked={form.vegetarianOnly} onChange={handleVegetarianToggle} />
+                <span>{t.dashboard.vegetarianOnly}</span>
+              </label>
+
+              <button type="submit" className="submit-btn">{t.dashboard.submit}</button>
+            </form>
+          </section>
+        ) : (
+          // Phase 2: show the personalized menu once the profile is set
+          <>
+            <section className="menu-section">
+              <div className="menu-header">
+                <div>
+                  <h2>{t.dashboard.menuTitle}</h2>
+                  <p className="calories-info">
+                    {t.dashboard.caloriesInfo}: <strong>{profile.calories}</strong> {t.dashboard.calories}
+                    {' '}({t.dashboard.goals[profile.goal]})
+                  </p>
+                  {/* Summary chips showing active vegetarian and allergen filters */}
+                  <div className="profile-chips">
+                    {profile.vegetarianOnly && (
+                      <span className="chip chip-green">🌱 {t.dashboard.vegetarianOnly}</span>
+                    )}
+                    {profile.allergies && profile.allergies.length > 0 && (
+                      <span className="chip chip-orange">
+                        ⚠️ {t.dashboard.profileAllergies}: {profile.allergies.map((a) => t.dashboard.allergens[a]).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Clear the profile and overrides so the user can fill the questionnaire again */}
+                <button className="recalc-btn" onClick={() => {
+                  localStorage.removeItem(profileKey);
+                  setProfile(null);
+                  setRecipes([]);
+                  setOverrides({});
+                }}>
+                  {t.dashboard.recalc}
+                </button>
+              </div>
+
+              {loading && <p className="loading-text">{t.dashboard.loading}</p>}
+              {fetchError && <p className="error-text">{fetchError}</p>}
+              {/* Render one Card per meal slot, falling back to a placeholder if no recipe matches */}
+              {!loading && !fetchError && (
+                <div className="cards-row">
+                  {displayedBreakfast
+                    ? <Card {...displayedBreakfast} onClick={() => setSelectedRecipe(displayedBreakfast)} />
+                    : <NoMealCard label={t.table.mealTypes.breakfast} msg={t.dashboard.noRecipeForMeal} />}
+                  {displayedLunch
+                    ? <Card {...displayedLunch} onClick={() => setSelectedRecipe(displayedLunch)} />
+                    : <NoMealCard label={t.table.mealTypes.lunch} msg={t.dashboard.noRecipeForMeal} />}
+                  {displayedDinner
+                    ? <Card {...displayedDinner} onClick={() => setSelectedRecipe(displayedDinner)} />
+                    : <NoMealCard label={t.table.mealTypes.dinner} msg={t.dashboard.noRecipeForMeal} />}
+                </div>
+              )}
+            </section>
+
+            {/* Table listing all compatible recipes with nutritional data and swap controls */}
+            <section className="table-section">
+              <h3>{t.dashboard.tableTitle}</h3>
+              {loading
+                ? <p className="loading-text">{t.dashboard.loading}</p>
+                : <Table
+                    columns={tableColumns}
+                    rows={compatibleRecipes}
+                    getRowClass={(row) => currentNames[row.mealType] === row.name ? 'row-highlighted' : ''}
+                  />}
+            </section>
+
+            {/* AI chat assistant — only shown after at least one meal card is available */}
+            {!loading && !fetchError && (displayedBreakfast || displayedLunch || displayedDinner) && (
+              <AiChat
+                profile={profile}
+                menu={{ breakfast: displayedBreakfast, lunch: displayedLunch, dinner: displayedDinner }}
+              />
+            )}
+          </>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// Placeholder card displayed when no compatible recipe exists for a given meal slot
+function NoMealCard({ label, msg }) {
+  return (
+    <div className="no-meal-card">
+      <div className="no-meal-label">{label}</div>
+      <p>{msg}</p>
+    </div>
+  );
+}

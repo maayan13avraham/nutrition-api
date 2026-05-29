@@ -1,0 +1,107 @@
+.settings-main {
+  flex: 1;
+  padding: 32px;
+  direction: rtl;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.settings-main h2 {
+  color: #2e7d32;
+  margin-bottom: 24px;
+}
+
+.settings-form .field-group {
+  margin-bottom: 20px;
+}
+
+.settings-form label {
+  display: block;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.settings-form input[type="text"],
+.settings-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.success-msg {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.error-banner {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.error-msg {
+  color: #e53935;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 4px;
+}
+
+.save-btn {
+  padding: 11px 28px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #1b5e20;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-text {
+  color: #777;
+}
+
+.settings-divider {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 28px 0;
+}
+
+.settings-section-title {
+  color: #2e7d32;
+  font-size: 1.1rem;
+  margin-bottom: 18px;
+}
+
+.settings-form input.input-error {
+  border-color: #e53935;
+}

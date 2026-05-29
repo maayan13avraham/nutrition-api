@@ -1,0 +1,285 @@
+.dashboard-main {
+  flex: 1;
+  padding: 32px;
+  direction: rtl;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Questionnaire */
+.questionnaire {
+  background: white;
+  border-radius: 12px;
+  padding: 36px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.questionnaire h2 {
+  color: #2e7d32;
+  margin-bottom: 8px;
+}
+
+.q-subtitle {
+  color: #777;
+  margin-bottom: 28px;
+}
+
+.q-form .q-row {
+  display: flex;
+  gap: 16px;
+}
+
+.q-form .field-group {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.q-form label {
+  display: block;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.q-form input,
+.q-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.error-msg {
+  color: #e53935;
+  font-size: 0.78rem;
+  display: block;
+  margin-top: 4px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background: #1b5e20;
+}
+
+/* Menu section */
+.menu-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.menu-header h2 {
+  color: #2e7d32;
+  margin: 0 0 4px;
+}
+
+.calories-info {
+  color: #555;
+  margin: 0;
+}
+
+.recalc-btn {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.recalc-btn:hover {
+  background: #c8e6c9;
+}
+
+.cards-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+/* Questionnaire sections */
+.q-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin: 22px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e8f5e9;
+}
+
+.q-section-subtitle {
+  font-size: 0.82rem;
+  color: #888;
+  margin: 0 0 10px;
+}
+
+/* Allergen chips */
+.allergens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.allergen-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  background: white;
+  color: #555;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.allergen-chip input[type="checkbox"] {
+  display: none;
+}
+
+.allergen-chip.selected {
+  border-color: #e53935;
+  background: #ffebee;
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* Dietary preference toggle */
+.pref-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 4px;
+  padding: 10px 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  width: fit-content;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pref-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2e7d32;
+}
+
+.pref-toggle:has(input:checked) {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  color: #1b5e20;
+  font-weight: 600;
+}
+
+/* Profile chips shown in menu header */
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+}
+
+.chip-green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.chip-orange {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+/* No meal placeholder card */
+.no-meal-card {
+  width: 280px;
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  padding: 24px 16px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.88rem;
+}
+
+.no-meal-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #bbb;
+}
+
+/* Swap feature */
+.swap-row-btn {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border: 1px solid #a5d6a7;
+  border-radius: 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.swap-row-btn:hover {
+  background: #c8e6c9;
+}
+
+.current-meal-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border-radius: 12px;
+  background: #2e7d32;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.row-highlighted {
+  background: #f1f8f1;
+}
+
+/* Table section */
+.table-section h3 {
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.loading-text {
+  color: #777;
+}
+
+.error-text {
+  color: #c62828;
+}
