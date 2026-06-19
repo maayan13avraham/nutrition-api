@@ -3,38 +3,31 @@ import { streamChat } from '../services/aiService';
 import { useLanguage } from '../context/LanguageContext';
 import './AiChat.css';
 
-// Static UI strings for both supported languages
 const UI = {
   he: {
     title: 'עוזר התזונה החכם',
     placeholder: 'שאל שאלה על התפריט שלך...',
     send: 'שלח',
-    // Auto-sent on mount to kick off an explanation of the proposed menu
-    initMsg: 'הסבר לי מדוע התפריט הזה מתאים לי ומה היתרונות שלו.',
     error: 'אירעה שגיאה. נסה שוב.',
     suggestions: [
-      'מה היתרונות של התפריט הזה?',
-      'הצע חלופה לארוחת הצהריים',
-      'תן לי טיפים תזונתיים',
-      'איך התפריט עוזר למטרה שלי?',
+      'הסבר לי על הערכים התזונתיים של התפריט שלי',
+      'האם יש חלבון מספק בתפריט הנוכחי?',
+      'הצע לי תחליף בריא לאחת הארוחות',
     ],
   },
   en: {
     title: 'Smart Nutrition Assistant',
     placeholder: 'Ask a question about your menu...',
     send: 'Send',
-    initMsg: 'Explain why this menu suits me and what its benefits are.',
     error: 'An error occurred. Please try again.',
     suggestions: [
-      'What are the benefits of this menu?',
-      'Suggest a lunch alternative',
-      'Give me nutritional tips',
-      'How does this menu help my goal?',
+      'Explain the nutritional values of my menu',
+      'Is there enough protein in the current menu?',
+      'Suggest a healthy alternative for one of the meals',
     ],
   },
 };
 
-// AI chat widget that explains the personalized menu and answers user questions via streaming
 export default function AiChat({ profile, menu }) {
   const { lang } = useLanguage();
   const ui = UI[lang] || UI.he;
@@ -42,40 +35,20 @@ export default function AiChat({ profile, menu }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  // Ref prevents the auto-send from firing more than once across re-renders
-  const initialized = useRef(false);
-  // Always reflects the latest messages array without causing stale closures in async callbacks
+
   const messagesRef = useRef([]);
   const bottomRef = useRef(null);
-  // Keep profile/menu in refs so sendMessage always reads the current dashboard state,
-  // even if props changed between the last render and when an async callback fires
   const profileRef = useRef(profile);
   const menuRef = useRef(menu);
 
-  // Keep the ref in sync with state so streaming callbacks always append to the latest history
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
-
-  // Sync profile/menu refs immediately whenever the dashboard passes updated props
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
   useEffect(() => { profileRef.current = profile; }, [profile]);
   useEffect(() => { menuRef.current = menu; }, [menu]);
 
-  // Scroll to the newest message whenever the chat history grows
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send an initial question on mount to immediately explain the proposed menu.
-  // Pass profile and menu explicitly so the auto-send never races against ref initialization.
-  useEffect(() => {
-    if (!initialized.current && profile && menu) {
-      initialized.current = true;
-      sendMessage(ui.initMsg, profile, menu);
-    }
-  }, [profile, menu]);
-
-  // Build a clean meal object containing only the fields the backend mealLine() reads.
   function extractMeal(recipe) {
     if (!recipe || !recipe.name) return null;
     return {
@@ -88,9 +61,6 @@ export default function AiChat({ profile, menu }) {
     };
   }
 
-  // Append the user message and an empty assistant placeholder, then start the stream.
-  // currentProfile / currentMenu are passed explicitly by callers so they always carry
-  // the live dashboard state; refs are used as a safe fallback for programmatic calls.
   async function sendMessage(text, currentProfile = profileRef.current, currentMenu = menuRef.current) {
     if (isStreaming) return;
 
@@ -107,7 +77,6 @@ export default function AiChat({ profile, menu }) {
 
     await streamChat(
       { profile: currentProfile, menu: safeMenu, messages: history, lang },
-      // Append each arriving text chunk to the last (assistant) message
       (chunk) => {
         setMessages((prev) => {
           const updated = [...prev];
@@ -117,7 +86,6 @@ export default function AiChat({ profile, menu }) {
         });
       },
       () => setIsStreaming(false),
-      // On error, replace the empty assistant message with the error string
       () => {
         setIsStreaming(false);
         setMessages((prev) => {
@@ -132,15 +100,13 @@ export default function AiChat({ profile, menu }) {
     );
   }
 
-  // Submit the text input as a new user message, passing current props explicitly
   function handleSubmit(e) {
     e.preventDefault();
     if (!input.trim() || isStreaming) return;
     sendMessage(input.trim(), profile, menu);
   }
 
-  // Quick-suggestion chips are only shown before the first back-and-forth exchange
-  const showSuggestions = messages.length <= 1 && !isStreaming;
+  const isEmpty = messages.length === 0;
 
   return (
     <section className="ai-chat-section">
@@ -154,7 +120,6 @@ export default function AiChat({ profile, menu }) {
           <div key={i} className={`chat-bubble chat-bubble-${msg.role}`}>
             {msg.content
               ? msg.content
-              // Show animated typing dots while the last assistant message is still streaming
               : msg.role === 'assistant' && isStreaming && i === messages.length - 1
               ? <span className="typing-indicator"><span /><span /><span /></span>
               : null}
@@ -163,7 +128,7 @@ export default function AiChat({ profile, menu }) {
         <div ref={bottomRef} />
       </div>
 
-      {showSuggestions && (
+      {isEmpty && !isStreaming && (
         <div className="ai-suggestions">
           {ui.suggestions.map((s, i) => (
             <button key={i} className="suggestion-chip" onClick={() => sendMessage(s, profile, menu)}>
