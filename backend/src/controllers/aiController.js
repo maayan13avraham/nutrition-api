@@ -141,7 +141,7 @@ async function chat(req, res) {
     }));
 
     const stream = await getClient().models.generateContentStream({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       systemInstruction: systemPrompt,
       contents,
       config: { maxOutputTokens: 2048 },
@@ -165,11 +165,12 @@ async function chat(req, res) {
       res.end();
     }
   } catch (err) {
+    console.error('[AI chat] GEMINI ERROR:', err.message, '| status:', err.status, '| code:', err.code);
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
         data: null,
-        error: { code: 'INTERNAL_ERROR', message: err.message, details: {} },
+        error: { code: 'INTERNAL_ERROR', message: err.message, details: { status: err.status, code: err.code } },
       });
     } else if (!res.writableEnded) {
       res.write(`data: ${JSON.stringify({ success: false, data: null, error: { code: 'STREAM_ERROR', message: err.message, details: {} } })}\n\n`);
