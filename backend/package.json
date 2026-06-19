@@ -2,14 +2,17 @@
   "name": "nutrition-api",
   "version": "1.0.0",
   "description": "Smart Nutrition Planning System - Backend API",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js",
+    "seed": "node migrations/seed.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
     "@google/genai": "^2.9.0",
     "dotenv": "^17.4.2",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mysql2": "^3.22.5",
+    "sequelize": "^6.37.8"
   }
 }

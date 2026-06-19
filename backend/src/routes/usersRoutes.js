@@ -3,19 +3,18 @@ const router = express.Router();
 // Import authorization middleware and controller logic
 const authorize = require('../middleware/auth');
 const ctrl = require('../controllers/usersController');
-// Get the currently logged-in user's profile (accessible by all roles)
+// Specific /me routes must be declared before /:id to avoid param capture
 router.get('/me', authorize('admin', 'nutritionist', 'user'), ctrl.getMe);
-// Update email/password for the currently logged-in user
 router.put('/me', authorize('admin', 'nutritionist', 'user'), ctrl.updateMe);
-// Get a list of all users (restricted to admin and nutritionist)
+// Favorite recipes — many-to-many: User ↔ Recipe via junction table
+router.get('/me/favorites', authorize('admin', 'nutritionist', 'user'), ctrl.getFavorites);
+router.post('/me/favorites/:recipeId', authorize('admin', 'nutritionist', 'user'), ctrl.addFavorite);
+router.delete('/me/favorites/:recipeId', authorize('admin', 'nutritionist', 'user'), ctrl.removeFavorite);
+// General user CRUD
 router.get('/', authorize('admin', 'nutritionist'), ctrl.getUsers);
-// Get a specific user's profile by ID (accessible by all roles)
 router.get('/:id', authorize('admin', 'nutritionist', 'user'), ctrl.getUserById);
-// Create a new user account (restricted to admin only)
 router.post('/', authorize('admin'), ctrl.createUser);
-// Update a user's details by ID (accessible by all roles)
 router.put('/:id', authorize('admin', 'nutritionist', 'user'), ctrl.updateUser);
-// Permanent deletion of a user profile (restricted to admin only)
 router.delete('/:id', authorize('admin'), ctrl.deleteUser);
 
 module.exports = router;
