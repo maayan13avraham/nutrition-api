@@ -26,8 +26,8 @@ export default function App() {
           {/* Redirect any unknown path to the dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-        {/* Floating support chat — rendered on all authenticated pages */}
-        <PrivateRoute><SupportChat /></PrivateRoute>
+        {/* Floating support chat — only mounts when a user session exists */}
+        {localStorage.getItem('user') && <SupportChat />}
       </BrowserRouter>
     </LanguageProvider>
   );
