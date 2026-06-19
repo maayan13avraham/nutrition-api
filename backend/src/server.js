@@ -1,6 +1,8 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+const http = require('http');
 const express = require('express');
 const { sequelize } = require('../models');
+const { initSocket } = require('./socket/socketHandler');
 const logger = require('./middleware/logger');
 const usersRoutes = require('./routes/usersRoutes');
 const recipesRoutes = require('./routes/recipesRoutes');
@@ -51,7 +53,9 @@ async function start() {
   } catch (err) {
     console.error('Database unavailable — starting without DB:', err.message);
   }
-  app.listen(PORT, () => {
+  const httpServer = http.createServer(app);
+  initSocket(httpServer);
+  httpServer.listen(PORT, () => {
     console.log(`Nutrition API server running at http://localhost:${PORT}`);
   });
 }

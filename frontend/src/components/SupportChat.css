@@ -1,0 +1,155 @@
+/* Floating action button */
+.support-chat-fab {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  color: white;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.support-chat-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.55);
+}
+
+/* Unread badge */
+.support-chat-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  background: #e53935;
+  color: white;
+  border-radius: 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* Slide-up chat panel */
+.support-chat-panel {
+  position: fixed;
+  bottom: 96px;
+  left: 28px;
+  z-index: 1000;
+  width: 340px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header bar — extends .ai-chat-header-bar */
+.support-chat-header {
+  justify-content: space-between;
+}
+
+.support-online-count {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin-right: auto;
+  margin-left: 8px;
+}
+
+.support-chat-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.support-chat-close:hover {
+  opacity: 1;
+}
+
+/* Message body — extends .ai-chat-body */
+.support-chat-body {
+  flex: 1;
+  min-height: 200px;
+  max-height: 320px;
+}
+
+/* System messages (join/leave notices) */
+.support-chat-system {
+  align-self: center;
+  font-size: 0.78rem;
+  color: #888;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  text-align: center;
+}
+
+/* Empty state */
+.support-chat-empty {
+  color: #aaa;
+  font-size: 0.88rem;
+  text-align: center;
+  margin: auto;
+  padding: 16px;
+}
+
+/* Sender name above assistant bubble */
+.support-sender {
+  display: block;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 3px;
+}
+
+/* Typing indicator row */
+.support-typing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+}
+
+.support-typing-name {
+  font-size: 0.78rem;
+  color: #888;
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .support-chat-panel {
+    width: calc(100vw - 32px);
+    left: 16px;
+    bottom: 88px;
+  }
+  .support-chat-fab {
+    bottom: 20px;
+    left: 16px;
+  }
+}

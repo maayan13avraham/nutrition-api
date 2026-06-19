@@ -4,6 +4,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import SettingsPage from './pages/SettingsPage';
+import SupportChat from './components/SupportChat';
 import './App.css';
 
 // Guard component that redirects unauthenticated users to the login page
@@ -25,6 +26,8 @@ export default function App() {
           {/* Redirect any unknown path to the dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        {/* Floating support chat — rendered on all authenticated pages */}
+        <PrivateRoute><SupportChat /></PrivateRoute>
       </BrowserRouter>
     </LanguageProvider>
   );
