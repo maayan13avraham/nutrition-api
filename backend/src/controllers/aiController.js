@@ -118,12 +118,12 @@ async function chat(req, res) {
     for await (const chunk of stream) {
       const text = chunk.text;
       if (text && !res.writableEnded) {
-        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+        res.write(`data: ${JSON.stringify({ success: true, data: { text }, error: null })}\n\n`);
       }
     }
 
     if (!res.writableEnded) {
-      res.write('data: [DONE]\n\n');
+      res.write(`data: ${JSON.stringify({ success: true, data: { done: true }, error: null })}\n\n`);
       res.end();
     }
   } catch (err) {
@@ -134,7 +134,7 @@ async function chat(req, res) {
         error: { code: 'INTERNAL_ERROR', message: err.message, details: {} },
       });
     } else if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+      res.write(`data: ${JSON.stringify({ success: false, data: null, error: { code: 'STREAM_ERROR', message: err.message, details: {} } })}\n\n`);
       res.end();
     }
   }

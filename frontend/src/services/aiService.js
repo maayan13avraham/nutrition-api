@@ -43,12 +43,11 @@ export async function streamChat({ profile, menu, messages, lang }, onText, onDo
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const payload = line.slice(6).trim();
-        // Server signals end of stream with the [DONE] sentinel value
-        if (payload === '[DONE]') { onDone(); return; }
         try {
           const parsed = JSON.parse(payload);
-          if (parsed.text) onText(parsed.text);
-          if (parsed.error) { onError(parsed.error); return; }
+          if (parsed.success && parsed.data?.text) onText(parsed.data.text);
+          if (parsed.success && parsed.data?.done) { onDone(); return; }
+          if (!parsed.success && parsed.error) { onError(parsed.error.message || parsed.error); return; }
         } catch {}
       }
     }
