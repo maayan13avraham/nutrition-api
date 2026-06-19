@@ -13,6 +13,12 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+// Renders SupportChat only when a session exists. Lives inside BrowserRouter so it
+// re-evaluates on every navigation (BrowserRouter re-renders its children on location change).
+function ConditionalSupportChat() {
+  return localStorage.getItem('user') ? <SupportChat /> : null;
+}
+
 // Root component that wraps the app in language support and defines all client-side routes
 export default function App() {
   return (
@@ -26,8 +32,8 @@ export default function App() {
           {/* Redirect any unknown path to the dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-        {/* Floating support chat — only mounts when a user session exists */}
-        {localStorage.getItem('user') && <SupportChat />}
+        {/* Floating support chat — ConditionalSupportChat re-checks auth on every navigation */}
+        <ConditionalSupportChat />
       </BrowserRouter>
     </LanguageProvider>
   );

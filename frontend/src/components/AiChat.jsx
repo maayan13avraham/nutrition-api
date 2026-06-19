@@ -47,11 +47,19 @@ export default function AiChat({ profile, menu }) {
   // Always reflects the latest messages array without causing stale closures in async callbacks
   const messagesRef = useRef([]);
   const bottomRef = useRef(null);
+  // Keep profile/menu in refs so sendMessage always reads the current dashboard state,
+  // even if props changed between the last render and when an async callback fires
+  const profileRef = useRef(profile);
+  const menuRef = useRef(menu);
 
   // Keep the ref in sync with state so streaming callbacks always append to the latest history
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  // Sync profile/menu refs immediately whenever the dashboard passes updated props
+  useEffect(() => { profileRef.current = profile; }, [profile]);
+  useEffect(() => { menuRef.current = menu; }, [menu]);
 
   // Scroll to the newest message whenever the chat history grows
   useEffect(() => {
@@ -75,8 +83,10 @@ export default function AiChat({ profile, menu }) {
     setInput('');
     setIsStreaming(true);
 
+    // Use refs so the request always carries the current dashboard menu/profile,
+    // even if this function is called from a stale closure or before re-render settles
     await streamChat(
-      { profile, menu, messages: history, lang },
+      { profile: profileRef.current, menu: menuRef.current, messages: history, lang },
       // Append each arriving text chunk to the last (assistant) message
       (chunk) => {
         setMessages((prev) => {
