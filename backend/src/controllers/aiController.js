@@ -13,8 +13,12 @@ const GOAL_HE = { loss: 'ירידה במשקל', gain: 'עלייה במסה', he
 const GOAL_EN = { loss: 'weight loss', gain: 'muscle gain', health: 'healthy living' };
 
 function mealLine(meal, labels) {
-  if (!meal) return labels.noMeal;
-  return `${meal.name} — ${meal.calories} ${labels.cal}, ${labels.protein}: ${meal.protein}g, ${labels.carbs}: ${meal.carbs}g, ${labels.fat}: ${meal.fat}g`;
+  if (!meal || !meal.name) return labels.noMeal;
+  const cal   = meal.calories ?? '?';
+  const prot  = meal.protein  ?? '?';
+  const carbs = meal.carbs    ?? '?';
+  const fat   = meal.fat      ?? '?';
+  return `${meal.name} — ${cal} ${labels.cal} | ${labels.protein}: ${prot}g | ${labels.carbs}: ${carbs}g | ${labels.fat}: ${fat}g`;
 }
 
 function buildSystemPrompt(profile, menu, lang) {
@@ -22,7 +26,10 @@ function buildSystemPrompt(profile, menu, lang) {
 
   if (isHe) {
     const labels = { cal: 'קל׳', protein: 'חלבון', carbs: 'פחמימות', fat: 'שומן', noMeal: 'לא נמצא מתכון מתאים' };
+    const totalCal = (menu.breakfast?.calories || 0) + (menu.lunch?.calories || 0) + (menu.dinner?.calories || 0);
     return `אתה עוזר תזונה אישי חכם. תפקידך לעזור למשתמש להבין את התפריט היומי שנבנה עבורו, לספק הסברים תזונתיים, להציע חלופות ולענות על שאלות בנושא תזונה.
+
+חשוב: יש לך גישה מלאה לכל פרטי הפרופיל ולתפריט של המשתמש כפי שמפורט להלן. אל תבקש מידע נוסף — המידע הזה הוא כל מה שאתה צריך.
 
 פרטי המשתמש:
 • גיל: ${profile.age} שנים
@@ -33,23 +40,25 @@ function buildSystemPrompt(profile, menu, lang) {
 ${profile.vegetarianOnly ? '• תזונה: צמחוני בלבד' : ''}
 ${profile.allergies?.length ? `• אלרגיות: ${profile.allergies.join(', ')}` : ''}
 
-התפריט היומי המוצע:
+התפריט היומי שנבחר עבור המשתמש:
 🌅 ארוחת בוקר: ${mealLine(menu.breakfast, labels)}
 ☀️ ארוחת צהריים: ${mealLine(menu.lunch, labels)}
 🌙 ארוחת ערב: ${mealLine(menu.dinner, labels)}
-
-סה"כ קלוריות בתפריט: ${(menu.breakfast?.calories || 0) + (menu.lunch?.calories || 0) + (menu.dinner?.calories || 0)} קל׳
+סה"כ קלוריות בתפריט: ${totalCal} קל׳
 
 הנחיות:
 • ענה תמיד בעברית בצורה ידידותית, חמה ומעודדת
 • הסבר בצורה ברורה ומעניינת, בלי ז׳רגון מורכב
 • כשמציע חלופות — הצע ספציפית ונמק מדוע
 • כשנשאל על טיפים — התאם אישית לפרופיל המשתמש
-• שמור על תשובות קצרות ורלוונטיות`;
+• ענה בצורה מפורטת ורלוונטית`;
   }
 
   const labels = { cal: 'cal', protein: 'protein', carbs: 'carbs', fat: 'fat', noMeal: 'No suitable recipe found' };
+  const totalCal = (menu.breakfast?.calories || 0) + (menu.lunch?.calories || 0) + (menu.dinner?.calories || 0);
   return `You are a smart personal nutrition assistant. Your role is to help the user understand their personalized daily menu, provide nutritional explanations, suggest alternatives, and answer nutrition questions.
+
+Important: You have full access to the user's profile and menu details listed below. Do not ask for additional information — this is everything you need.
 
 User Profile:
 • Age: ${profile.age} years
@@ -60,23 +69,28 @@ User Profile:
 ${profile.vegetarianOnly ? '• Diet: Vegetarian only' : ''}
 ${profile.allergies?.length ? `• Allergies: ${profile.allergies.join(', ')}` : ''}
 
-Proposed Daily Menu:
+Daily Menu Selected for This User:
 🌅 Breakfast: ${mealLine(menu.breakfast, labels)}
 ☀️ Lunch: ${mealLine(menu.lunch, labels)}
 🌙 Dinner: ${mealLine(menu.dinner, labels)}
-
-Total menu calories: ${(menu.breakfast?.calories || 0) + (menu.lunch?.calories || 0) + (menu.dinner?.calories || 0)} cal
+Total menu calories: ${totalCal} cal
 
 Guidelines:
-• Always respond in English in a friendly, warm, and encouraging tone
+• Always respond in a friendly, warm, and encouraging tone
 • Explain clearly and engagingly, without complex jargon
 • When suggesting alternatives — be specific and explain why
 • When asked for tips — personalize them to the user's profile
-• Keep responses concise and relevant`;
+• Give detailed and relevant answers`;
 }
 
 async function chat(req, res) {
   const { profile, menu, messages, lang } = req.body;
+
+  console.log('[AI chat] received menu:', JSON.stringify({
+    breakfast: menu?.breakfast ? `${menu.breakfast.name} (${menu.breakfast.calories} cal)` : null,
+    lunch:     menu?.lunch     ? `${menu.lunch.name} (${menu.lunch.calories} cal)`     : null,
+    dinner:    menu?.dinner    ? `${menu.dinner.name} (${menu.dinner.calories} cal)`    : null,
+  }));
 
   if (!profile || !menu || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({

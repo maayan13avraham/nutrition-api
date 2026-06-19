@@ -66,16 +66,32 @@ export default function AiChat({ profile, menu }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send an initial question on mount to immediately explain the proposed menu
+  // Send an initial question on mount to immediately explain the proposed menu.
+  // Pass profile and menu explicitly so the auto-send never races against ref initialization.
   useEffect(() => {
     if (!initialized.current && profile && menu) {
       initialized.current = true;
-      sendMessage(ui.initMsg);
+      sendMessage(ui.initMsg, profile, menu);
     }
   }, [profile, menu]);
 
-  // Append the user message and an empty assistant placeholder, then start the stream
-  async function sendMessage(text) {
+  // Build a clean meal object containing only the fields the backend mealLine() reads.
+  function extractMeal(recipe) {
+    if (!recipe || !recipe.name) return null;
+    return {
+      name: recipe.name,
+      calories: recipe.calories,
+      protein: recipe.protein,
+      carbs: recipe.carbs,
+      fat: recipe.fat,
+      mealType: recipe.mealType,
+    };
+  }
+
+  // Append the user message and an empty assistant placeholder, then start the stream.
+  // currentProfile / currentMenu are passed explicitly by callers so they always carry
+  // the live dashboard state; refs are used as a safe fallback for programmatic calls.
+  async function sendMessage(text, currentProfile = profileRef.current, currentMenu = menuRef.current) {
     if (isStreaming) return;
 
     const history = [...messagesRef.current, { role: 'user', content: text }];
@@ -83,30 +99,14 @@ export default function AiChat({ profile, menu }) {
     setInput('');
     setIsStreaming(true);
 
-    // Explicitly extract the fields the backend mealLine() reads so the payload is a clean
-    // minimal object regardless of what extra properties Sequelize may attach to the recipe.
-    const extractMeal = (recipe) => {
-      if (!recipe) return null;
-      return {
-        name: recipe.name,
-        calories: recipe.calories,
-        protein: recipe.protein,
-        carbs: recipe.carbs,
-        fat: recipe.fat,
-        mealType: recipe.mealType,
-      };
-    };
-    const currentMenu = menuRef.current || {};
     const safeMenu = {
-      breakfast: extractMeal(currentMenu.breakfast),
-      lunch: extractMeal(currentMenu.lunch),
-      dinner: extractMeal(currentMenu.dinner),
+      breakfast: extractMeal(currentMenu?.breakfast),
+      lunch:     extractMeal(currentMenu?.lunch),
+      dinner:    extractMeal(currentMenu?.dinner),
     };
 
-    // Use refs so the request always carries the current dashboard menu/profile,
-    // even if this function is called from a stale closure or before re-render settles
     await streamChat(
-      { profile: profileRef.current, menu: safeMenu, messages: history, lang },
+      { profile: currentProfile, menu: safeMenu, messages: history, lang },
       // Append each arriving text chunk to the last (assistant) message
       (chunk) => {
         setMessages((prev) => {
@@ -132,11 +132,11 @@ export default function AiChat({ profile, menu }) {
     );
   }
 
-  // Submit the text input as a new user message
+  // Submit the text input as a new user message, passing current props explicitly
   function handleSubmit(e) {
     e.preventDefault();
     if (!input.trim() || isStreaming) return;
-    sendMessage(input.trim());
+    sendMessage(input.trim(), profile, menu);
   }
 
   // Quick-suggestion chips are only shown before the first back-and-forth exchange
@@ -166,7 +166,7 @@ export default function AiChat({ profile, menu }) {
       {showSuggestions && (
         <div className="ai-suggestions">
           {ui.suggestions.map((s, i) => (
-            <button key={i} className="suggestion-chip" onClick={() => sendMessage(s)}>
+            <button key={i} className="suggestion-chip" onClick={() => sendMessage(s, profile, menu)}>
               {s}
             </button>
           ))}
