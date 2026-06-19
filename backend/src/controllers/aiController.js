@@ -26,31 +26,37 @@ function buildSystemPrompt(profile, menu, lang) {
 
   if (isHe) {
     const labels = { cal: 'קל׳', protein: 'חלבון', carbs: 'פחמימות', fat: 'שומן', noMeal: 'לא נמצא מתכון מתאים' };
-    const totalCal = (menu.breakfast?.calories || 0) + (menu.lunch?.calories || 0) + (menu.dinner?.calories || 0);
-    return `אתה עוזר תזונה אישי חכם המנתח תפריט יומי ספציפי שכבר נבחר עבור המשתמש.
-
-כללי עבודה מחייבים — חובה לקיים אותם בכל תשובה:
-1. יש לך את כל המידע הדרוש. אל תכתוב אף פעם משפטים כמו "אין לי את פרטי התפריט", "לא סיפקת מידע" או כל ביטוי דומה — זהו שקר, כי הפרטים מופיעים בהמשך.
-2. התחל את תשובתך ישירות מהתוכן — ללא הקדמות גנריות, ללא כותרות של "כמובן!" או "בשמחה!".
-3. בכל תשובה, ציין לפחות שם מנה אחת מהתפריט (${menu.breakfast?.name || ''}/${menu.lunch?.name || ''}/${menu.dinner?.name || ''}) והתייחס לנתוניה הספציפיים.
-
-פרטי המשתמש:
-• גיל: ${profile.age} שנים | משקל: ${profile.weight} ק"ג | גובה: ${profile.height} ס"מ
-• מטרה: ${GOAL_HE[profile.goal] || profile.goal}
-• יעד קלורי יומי: ${profile.calories} קלוריות
-${profile.vegetarianOnly ? '• תזונה: צמחוני בלבד' : ''}${profile.allergies?.length ? `\n• אלרגיות: ${profile.allergies.join(', ')}` : ''}
-
-התפריט היומי שנבחר עבור המשתמש הזה:
-🌅 ארוחת בוקר: ${mealLine(menu.breakfast, labels)}
-☀️ ארוחת צהריים: ${mealLine(menu.lunch, labels)}
-🌙 ארוחת ערב: ${mealLine(menu.dinner, labels)}
-סה"כ: ${totalCal} קל׳
-
-הנחיות סגנון:
-• ענה בעברית, בטון ידידותי ומעודד
-• הסבר בצורה ברורה — בלי ז׳רגון
-• כשמציע חלופות — הצע ספציפית ונמק
-• כשנשאל על טיפים — התאם לפרופיל המשתמש`;
+    const bName = menu.breakfast ? menu.breakfast.name : '';
+    const lName = menu.lunch     ? menu.lunch.name     : '';
+    const dName = menu.dinner    ? menu.dinner.name    : '';
+    const totalCal = (menu.breakfast ? menu.breakfast.calories : 0)
+                   + (menu.lunch     ? menu.lunch.calories     : 0)
+                   + (menu.dinner    ? menu.dinner.calories    : 0);
+    const vegLine      = profile.vegetarianOnly ? '\n• תזונה: צמחוני בלבד' : '';
+    const allergyLine  = profile.allergies && profile.allergies.length
+                         ? '\n• אלרגיות: ' + profile.allergies.join(', ')
+                         : '';
+    const dishList     = [bName, lName, dName].filter(Boolean).join(', ');
+    return 'אתה עוזר תזונה אישי חכם המנתח תפריט יומי ספציפי שכבר נבחר עבור המשתמש.\n\n'
+      + 'כללי עבודה מחייבים:\n'
+      + '1. יש לך את כל המידע הדרוש. אל תכתוב ביטויים כמו "אין לי את פרטי התפריט" — הפרטים מופיעים כאן.\n'
+      + '2. התחל את תשובתך ישירות מהתוכן, ללא הקדמות גנריות.\n'
+      + '3. ציין לפחות מנה אחת בשמה (' + dishList + ') והתייחס לנתוניה הספציפיים.\n\n'
+      + 'פרטי המשתמש:\n'
+      + '• גיל: ' + profile.age + ' שנים | משקל: ' + profile.weight + ' ק"ג | גובה: ' + profile.height + ' ס"מ\n'
+      + '• מטרה: ' + (GOAL_HE[profile.goal] || profile.goal) + '\n'
+      + '• יעד קלורי יומי: ' + profile.calories + ' קלוריות'
+      + vegLine + allergyLine + '\n\n'
+      + 'התפריט היומי שנבחר עבור המשתמש הזה:\n'
+      + '🌅 ארוחת בוקר: ' + mealLine(menu.breakfast, labels) + '\n'
+      + '☀️ ארוחת צהריים: ' + mealLine(menu.lunch, labels) + '\n'
+      + '🌙 ארוחת ערב: ' + mealLine(menu.dinner, labels) + '\n'
+      + 'סה"כ: ' + totalCal + ' קל׳\n\n'
+      + 'הנחיות סגנון:\n'
+      + '• ענה בעברית, בטון ידידותי ומעודד\n'
+      + '• הסבר בצורה ברורה, בלי ז׳רגון\n'
+      + '• כשמציע חלופות — הצע ספציפית ונמק\n'
+      + '• כשנשאל על טיפים — התאם לפרופיל המשתמש';
   }
 
   const labels = { cal: 'cal', protein: 'protein', carbs: 'carbs', fat: 'fat', noMeal: 'No suitable recipe found' };
