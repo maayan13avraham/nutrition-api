@@ -1,23 +1,22 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { GoogleGenAI } = require('@google/genai');
 
-// Lazily initialize the Anthropic client so the module loads even without an API key at startup
-let client;
+let aiClient = null;
 function getClient() {
-  if (!client) client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  return client;
+  if (!aiClient) {
+    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured');
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return aiClient;
 }
 
-// Goal label maps used inside the system prompt for each supported language
 const GOAL_HE = { loss: 'ירידה במשקל', gain: 'עלייה במסה', health: 'חיים בריאים' };
 const GOAL_EN = { loss: 'weight loss', gain: 'muscle gain', health: 'healthy living' };
 
-// Format a single meal as a compact summary line, or return the "not found" label if null
 function mealLine(meal, labels) {
   if (!meal) return labels.noMeal;
   return `${meal.name} — ${meal.calories} ${labels.cal}, ${labels.protein}: ${meal.protein}g, ${labels.carbs}: ${meal.carbs}g, ${labels.fat}: ${meal.fat}g`;
 }
 
-// Build the Claude system prompt embedding the user's profile and proposed menu as context
 function buildSystemPrompt(profile, menu, lang) {
   const isHe = lang !== 'en';
 
@@ -76,7 +75,6 @@ Guidelines:
 • Keep responses concise and relevant`;
 }
 
-// Stream a Claude AI response back to the client using Server-Sent Events (SSE)
 async function chat(req, res) {
   const { profile, menu, messages, lang } = req.body;
 
@@ -88,7 +86,7 @@ async function chat(req, res) {
     });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({
       success: false,
       data: null,
@@ -96,7 +94,6 @@ async function chat(req, res) {
     });
   }
 
-  // Switch the response to SSE mode before any data is written
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -104,34 +101,32 @@ async function chat(req, res) {
   try {
     const systemPrompt = buildSystemPrompt(profile, menu, lang || 'he');
 
-    const stream = getClient().messages.stream({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      // cache_control marks the system prompt for prompt caching to reduce latency on follow-up turns
-      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
-      messages,
+    // Convert from Claude format ({ role, content }) to Gemini format ({ role, parts })
+    // Gemini uses 'model' instead of 'assistant' for AI turns
+    const contents = messages.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+    const stream = await getClient().models.generateContentStream({
+      model: 'gemini-2.5-flash',
+      systemInstruction: systemPrompt,
+      contents,
+      config: { maxOutputTokens: 1024 },
     });
 
-    stream.on('text', (text) => {
-      if (!res.writableEnded) res.write(`data: ${JSON.stringify({ text })}\n\n`);
-    });
-
-    // Guard against writing after end in case finalMessage() also throws after the error event fires
-    stream.on('error', (err) => {
-      if (!res.writableEnded) {
-        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-        res.end();
+    for await (const chunk of stream) {
+      const text = chunk.text;
+      if (text && !res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
-    });
+    }
 
-    await stream.finalMessage();
-    // Signal end of stream to the client with the SSE done sentinel
     if (!res.writableEnded) {
       res.write('data: [DONE]\n\n');
       res.end();
     }
   } catch (err) {
-    // If SSE headers were already flushed, send the error as an SSE event instead of a status code
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
