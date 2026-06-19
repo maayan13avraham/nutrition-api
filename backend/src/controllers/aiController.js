@@ -135,8 +135,11 @@ async function chat(req, res) {
       if (text && !res.writableEnded) {
         res.write(`data: ${JSON.stringify({ success: true, data: { text }, error: null })}\n\n`);
         // Force the chunk out of Node's internal buffer immediately
-        if (typeof res.flush === 'function') res.flush();
-        if (typeof res.flushHeaders === 'function') res.flushHeaders();
+        if (res.flush && typeof res.flush === 'function') {
+          res.flush();
+        } else if (typeof res.flushHeaders === 'function') {
+          res.flushHeaders();
+        }
       }
     }
 
