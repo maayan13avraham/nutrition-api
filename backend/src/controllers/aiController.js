@@ -141,7 +141,7 @@ async function chat(req, res) {
     }));
 
     const stream = await getClient().models.generateContentStream({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt,
       contents,
       config: { maxOutputTokens: 2048 },
