@@ -25,38 +25,50 @@ function buildSystemPrompt(profile, menu, lang) {
   const isHe = lang !== 'en';
 
   if (isHe) {
-    const labels = { cal: 'קל׳', protein: 'חלבון', carbs: 'פחמימות', fat: 'שומן', noMeal: 'לא נמצא מתכון מתאים' };
-    const bName = menu.breakfast ? menu.breakfast.name : '';
-    const lName = menu.lunch     ? menu.lunch.name     : '';
-    const dName = menu.dinner    ? menu.dinner.name    : '';
-    const totalCal = (menu.breakfast ? menu.breakfast.calories : 0)
-                   + (menu.lunch     ? menu.lunch.calories     : 0)
-                   + (menu.dinner    ? menu.dinner.calories    : 0);
-    const vegLine      = profile.vegetarianOnly ? '\n• תזונה: צמחוני בלבד' : '';
-    const allergyLine  = profile.allergies && profile.allergies.length
-                         ? '\n• אלרגיות: ' + profile.allergies.join(', ')
-                         : '';
-    const dishList     = [bName, lName, dName].filter(Boolean).join(', ');
-    return 'אתה עוזר תזונה אישי חכם המנתח תפריט יומי ספציפי שכבר נבחר עבור המשתמש.\n\n'
-      + 'כללי עבודה מחייבים:\n'
-      + '1. יש לך את כל המידע הדרוש. אל תכתוב ביטויים כמו "אין לי את פרטי התפריט" — הפרטים מופיעים כאן.\n'
-      + '2. התחל את תשובתך ישירות מהתוכן, ללא הקדמות גנריות.\n'
-      + '3. ציין לפחות מנה אחת בשמה (' + dishList + ') והתייחס לנתוניה הספציפיים.\n\n'
-      + 'פרטי המשתמש:\n'
-      + '• גיל: ' + profile.age + ' שנים | משקל: ' + profile.weight + ' ק"ג | גובה: ' + profile.height + ' ס"מ\n'
-      + '• מטרה: ' + (GOAL_HE[profile.goal] || profile.goal) + '\n'
-      + '• יעד קלורי יומי: ' + profile.calories + ' קלוריות'
-      + vegLine + allergyLine + '\n\n'
-      + 'התפריט היומי שנבחר עבור המשתמש הזה:\n'
-      + '🌅 ארוחת בוקר: ' + mealLine(menu.breakfast, labels) + '\n'
-      + '☀️ ארוחת צהריים: ' + mealLine(menu.lunch, labels) + '\n'
-      + '🌙 ארוחת ערב: ' + mealLine(menu.dinner, labels) + '\n'
-      + 'סה"כ: ' + totalCal + ' קל׳\n\n'
-      + 'הנחיות סגנון:\n'
-      + '• ענה בעברית, בטון ידידותי ומעודד\n'
-      + '• הסבר בצורה ברורה, בלי ז׳רגון\n'
-      + '• כשמציע חלופות — הצע ספציפית ונמק\n'
-      + '• כשנשאל על טיפים — התאם לפרופיל המשתמש';
+    const labels = { cal: 'kal', protein: 'חלבון', carbs: 'פחמימות', fat: 'שומן', noMeal: 'לא נמצא מתכון' };
+    const bName    = menu.breakfast ? menu.breakfast.name     : '';
+    const lName    = menu.lunch     ? menu.lunch.name         : '';
+    const dName    = menu.dinner    ? menu.dinner.name        : '';
+    const bLine    = mealLine(menu.breakfast, labels);
+    const lLine    = mealLine(menu.lunch,     labels);
+    const dLine    = mealLine(menu.dinner,    labels);
+    const totalCal = (menu.breakfast ? Number(menu.breakfast.calories) : 0)
+                   + (menu.lunch     ? Number(menu.lunch.calories)     : 0)
+                   + (menu.dinner    ? Number(menu.dinner.calories)    : 0);
+    const dishList = [bName, lName, dName].filter(Boolean).join(', ');
+    const goal     = GOAL_HE[profile.goal] || profile.goal || '';
+    const lines = [
+      'אתה עוזר תזונה אישי חכם המנתח תפריט יומי ספציפי שכבר נבחר עבור המשתמש.',
+      '',
+      'כללי עבודה מחייבים:',
+      '1. יש לך את כל המידע הדרוש. אל תכתוב ביטויים כמו אין לי את פרטי התפריט — הפרטים מופיעים כאן.',
+      '2. התחל את תשובתך ישירות מהתוכן, ללא הקדמות גנריות.',
+      '3. ציין לפחות מנה אחת בשמה (' + dishList + ') והתייחס לנתוניה.',
+      '',
+      'פרטי המשתמש:',
+      'גיל: ' + profile.age + ' | משקל: ' + profile.weight + ' קג | גובה: ' + profile.height + ' סמ',
+      'מטרה: ' + goal,
+      'יעד קלורי יומי: ' + profile.calories + ' קלוריות',
+    ];
+    if (profile.vegetarianOnly) lines.push('תזונה: צמחוני בלבד');
+    if (profile.allergies && profile.allergies.length) {
+      lines.push('אלרגיות: ' + profile.allergies.join(', '));
+    }
+    lines.push(
+      '',
+      'התפריט היומי שנבחר:',
+      'בוקר: '    + bLine,
+      'צהריים: '  + lLine,
+      'ערב: '     + dLine,
+      'סה"כ: '   + totalCal + ' קלוריות',
+      '',
+      'הנחיות סגנון:',
+      'ענה בעברית, בטון ידידותי ומעודד.',
+      'הסבר בצורה ברורה, בלי מונחים מקצועיים.',
+      'כשמציע חלופות — הצע ספציפית ונמק.',
+      'כשנשאל על טיפים — התאם לפרופיל המשתמש.'
+    );
+    return lines.join('\n');
   }
 
   const labels = { cal: 'cal', protein: 'protein', carbs: 'carbs', fat: 'fat', noMeal: 'No suitable recipe found' };
