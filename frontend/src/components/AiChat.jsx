@@ -83,10 +83,30 @@ export default function AiChat({ profile, menu }) {
     setInput('');
     setIsStreaming(true);
 
+    // Explicitly extract the fields the backend mealLine() reads so the payload is a clean
+    // minimal object regardless of what extra properties Sequelize may attach to the recipe.
+    const extractMeal = (recipe) => {
+      if (!recipe) return null;
+      return {
+        name: recipe.name,
+        calories: recipe.calories,
+        protein: recipe.protein,
+        carbs: recipe.carbs,
+        fat: recipe.fat,
+        mealType: recipe.mealType,
+      };
+    };
+    const currentMenu = menuRef.current || {};
+    const safeMenu = {
+      breakfast: extractMeal(currentMenu.breakfast),
+      lunch: extractMeal(currentMenu.lunch),
+      dinner: extractMeal(currentMenu.dinner),
+    };
+
     // Use refs so the request always carries the current dashboard menu/profile,
     // even if this function is called from a stale closure or before re-render settles
     await streamChat(
-      { profile: profileRef.current, menu: menuRef.current, messages: history, lang },
+      { profile: profileRef.current, menu: safeMenu, messages: history, lang },
       // Append each arriving text chunk to the last (assistant) message
       (chunk) => {
         setMessages((prev) => {

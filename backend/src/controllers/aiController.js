@@ -95,8 +95,9 @@ async function chat(req, res) {
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
 
   try {
     const systemPrompt = buildSystemPrompt(profile, menu, lang || 'he');
@@ -112,13 +113,16 @@ async function chat(req, res) {
       model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt,
       contents,
-      config: { maxOutputTokens: 1024 },
+      config: { maxOutputTokens: 2048 },
     });
 
     for await (const chunk of stream) {
       const text = chunk.text;
       if (text && !res.writableEnded) {
         res.write(`data: ${JSON.stringify({ success: true, data: { text }, error: null })}\n\n`);
+        // Force the chunk out of Node's internal buffer immediately
+        if (typeof res.flush === 'function') res.flush();
+        if (typeof res.flushHeaders === 'function') res.flushHeaders();
       }
     }
 
