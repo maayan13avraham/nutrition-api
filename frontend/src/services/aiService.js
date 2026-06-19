@@ -22,7 +22,7 @@ export async function streamChat({ profile, menu, messages, lang }, onText, onDo
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      onError(err?.error?.message || 'Server error');
+      onError(err?.error?.code || err?.error?.message || 'Server error');
       return;
     }
 

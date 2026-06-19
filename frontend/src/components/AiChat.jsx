@@ -86,13 +86,23 @@ export default function AiChat({ profile, menu }) {
         });
       },
       () => setIsStreaming(false),
-      () => {
+      (errMsg) => {
         setIsStreaming(false);
+        const isRateLimit = errMsg && (
+          errMsg.includes('RATE_LIMIT') ||
+          errMsg.includes('rate limit') ||
+          errMsg.includes('quota')
+        );
+        const displayMsg = isRateLimit
+          ? (lang === 'he'
+              ? 'שירות הבינה המלאכותית הגיע למגבלת הבקשות. המתן כ-30 שניות ונסה שוב.'
+              : 'AI rate limit reached. Please wait 30 seconds and try again.')
+          : ui.error;
         setMessages((prev) => {
           const updated = [...prev];
           const last = updated.length - 1;
           if (!updated[last].content) {
-            updated[last] = { ...updated[last], content: ui.error };
+            updated[last] = { ...updated[last], content: displayMsg };
           }
           return updated;
         });

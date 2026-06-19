@@ -141,7 +141,7 @@ async function chat(req, res) {
     }));
 
     const stream = await getClient().models.generateContentStream({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash-lite',
       systemInstruction: systemPrompt,
       contents,
       config: { maxOutputTokens: 2048 },
@@ -165,15 +165,20 @@ async function chat(req, res) {
       res.end();
     }
   } catch (err) {
-    console.error('[AI chat] GEMINI ERROR:', err.message, '| status:', err.status, '| code:', err.code);
+    const isRateLimit = err.message && err.message.includes('"code": 429');
+    const errCode = isRateLimit ? 'RATE_LIMIT_EXCEEDED' : 'INTERNAL_ERROR';
+    const errMsg  = isRateLimit
+      ? 'AI rate limit reached. Please wait a moment and try again.'
+      : err.message;
+    console.error('[AI chat] GEMINI ERROR:', isRateLimit ? '429 rate limit' : err.message);
     if (!res.headersSent) {
-      res.status(500).json({
+      res.status(isRateLimit ? 429 : 500).json({
         success: false,
         data: null,
-        error: { code: 'INTERNAL_ERROR', message: err.message, details: { status: err.status, code: err.code } },
+        error: { code: errCode, message: errMsg, details: {} },
       });
     } else if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ success: false, data: null, error: { code: 'STREAM_ERROR', message: err.message, details: {} } })}\n\n`);
+      res.write(`data: ${JSON.stringify({ success: false, data: null, error: { code: errCode, message: errMsg, details: {} } })}\n\n`);
       res.end();
     }
   }
