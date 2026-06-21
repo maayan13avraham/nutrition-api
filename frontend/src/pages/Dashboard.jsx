@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getRecipes } from '../services/recipesService';
+import React, { useState, useEffect, useMemo } from 'react';
+import { getRecipes, generateMenu } from '../services/recipesService';
 import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -14,11 +14,16 @@ const GOAL_VALUES = ['loss', 'gain', 'health'];
 // Allergen keys that map to translated labels in LanguageContext
 const ALLERGEN_KEYS = ['eggs', 'dairy', 'gluten', 'fish', 'nuts', 'soy'];
 
-// Calculate daily calorie target using a simplified Mifflin-St Jeor formula with activity factor
-function calcCalories(age, weight, height, goal) {
+const ACTIVITY_LEVELS = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
+const ACTIVITY_MULTIPLIERS = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9,
+};
+
+// Calculate daily calorie target using Mifflin-St Jeor BMR with user-supplied activity factor
+function calcCalories(age, weight, height, goal, activityLevel) {
   const bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-  const tdee = Math.round(bmr * 1.4);
-  const adjustments = { loss: -200, gain: 300, health: 0 };
+  const tdee = Math.round(bmr * (ACTIVITY_MULTIPLIERS[activityLevel] || 1.55));
+  const adjustments = { loss: -500, gain: 300, health: 0 };
   return tdee + (adjustments[goal] || 0);
 }
 
@@ -32,14 +37,6 @@ function applyPreferences(recipes, profile) {
   });
 }
 
-// Select the single recipe of the given meal type whose calories are closest to the target
-function pickRecipe(recipes, mealType, targetPerMeal) {
-  const filtered = recipes.filter((r) => r.mealType === mealType);
-  if (!filtered.length) return null;
-  return [...filtered].sort(
-    (a, b) => Math.abs(a.calories - targetPerMeal) - Math.abs(b.calories - targetPerMeal)
-  )[0];
-}
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -51,9 +48,11 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(savedProfile);
   const [form, setForm] = useState({
     age: '', weight: '', height: '', goal: 'health',
+    activityLevel: 'moderate',
     allergies: [], vegetarianOnly: false,
   });
   const [formErrors, setFormErrors] = useState({});
+  const [generatedMenu, setGeneratedMenu] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
@@ -61,15 +60,25 @@ export default function Dashboard() {
   // Stores user-chosen meal overrides; takes priority over the auto-picked default recipes
   const [overrides, setOverrides] = useState({});
 
-  // Fetch all recipes from the server whenever a profile is set or updated
+  // Generate the primary menu via the backend whenever a profile is set or updated
   useEffect(() => {
     if (!profile) return;
     setLoading(true);
     setFetchError('');
-    getRecipes()
-      .then((res) => setRecipes(res.data))
-      .catch(() => setFetchError(t.dashboard.fetchError))
+    setGeneratedMenu(null);
+    generateMenu(profile)
+      .then((res) => {
+        if (res.success) setGeneratedMenu(res.data);
+        else setFetchError(t.dashboard.menuError);
+      })
+      .catch(() => setFetchError(t.dashboard.menuError))
       .finally(() => setLoading(false));
+  }, [profile]);
+
+  // Fetch all recipes for the swap table (runs in parallel; silent failure is acceptable)
+  useEffect(() => {
+    if (!profile) return;
+    getRecipes().then((res) => setRecipes(res.data || [])).catch(() => {});
   }, [profile]);
 
   // Validate age, weight, and height ranges before calculating the calorie target
@@ -106,23 +115,30 @@ export default function Dashboard() {
     e.preventDefault();
     const errs = validateForm();
     if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
-    const calories = calcCalories(Number(form.age), Number(form.weight), Number(form.height), form.goal);
+    const calories = calcCalories(Number(form.age), Number(form.weight), Number(form.height), form.goal, form.activityLevel);
     const newProfile = { ...form, calories };
     localStorage.setItem(profileKey, JSON.stringify(newProfile));
     setProfile(newProfile);
   }
 
-  // Derive compatible recipes and auto-selected meals from current profile and fetched data
+  // Derive compatible recipes for the swap table; meals come from backend-generated menu
   const compatibleRecipes = profile ? applyPreferences(recipes, profile) : [];
-  const targetPerMeal = profile ? Math.round(profile.calories / 3) : 0;
-  const breakfast = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'breakfast', targetPerMeal) : null;
-  const lunch = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'lunch', targetPerMeal) : null;
-  const dinner = compatibleRecipes.length ? pickRecipe(compatibleRecipes, 'dinner', targetPerMeal) : null;
+  const breakfast = generatedMenu?.breakfast || null;
+  const lunch     = generatedMenu?.lunch     || null;
+  const dinner    = generatedMenu?.dinner    || null;
 
   // Apply any user-selected overrides on top of the auto-picked default meals
   const displayedBreakfast = overrides.breakfast || breakfast;
   const displayedLunch = overrides.lunch || lunch;
   const displayedDinner = overrides.dinner || dinner;
+
+  // Stable object reference so AiChat's useEffect([menu]) doesn't fire on every render
+  const menu = useMemo(() => ({
+    breakfast: displayedBreakfast,
+    lunch:     displayedLunch,
+    dinner:    displayedDinner,
+  }), [displayedBreakfast, displayedLunch, displayedDinner]);
+
   // Map of meal slot to the name of the currently displayed recipe, used to mark table rows
   const currentNames = {
     breakfast: displayedBreakfast?.name,
@@ -196,6 +212,14 @@ export default function Dashboard() {
                   ))}
                 </select>
               </div>
+              <div className="field-group">
+                <label>{t.dashboard.activityLabel}</label>
+                <select name="activityLevel" value={form.activityLevel} onChange={handleFormChange}>
+                  {ACTIVITY_LEVELS.map((level) => (
+                    <option key={level} value={level}>{t.dashboard.activityLevels[level]}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Allergies */}
               <div className="q-section-title">⚠️ {t.dashboard.allergiesTitle}</div>
@@ -251,6 +275,7 @@ export default function Dashboard() {
                   localStorage.removeItem(profileKey);
                   setProfile(null);
                   setRecipes([]);
+                  setGeneratedMenu(null);
                   setOverrides({});
                 }}>
                   {t.dashboard.recalc}
@@ -291,7 +316,7 @@ export default function Dashboard() {
             {!loading && !fetchError && (displayedBreakfast || displayedLunch || displayedDinner) && (
               <AiChat
                 profile={profile}
-                menu={{ breakfast: displayedBreakfast, lunch: displayedLunch, dinner: displayedDinner }}
+                menu={menu}
               />
             )}
           </>

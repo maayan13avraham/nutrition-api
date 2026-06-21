@@ -9,6 +9,8 @@ export default function Navbar() {
   const [userName, setUserName] = useState('');
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = currentUser.userRole;
 
   // Fetch the current user's first name on mount to display in the greeting
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function Navbar() {
   async function handleLogout() {
     await logout();
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     navigate('/login');
   }
 
@@ -29,6 +32,9 @@ export default function Navbar() {
       <div className="navbar-brand">{t.navbar.brand}</div>
       <div className="navbar-links">
         <Link to="/dashboard">{t.navbar.dashboard}</Link>
+        {['admin', 'nutritionist'].includes(userRole) && (
+          <Link to="/recipes">{t.navbar.recipeManagement}</Link>
+        )}
         <Link to="/settings">{t.navbar.settings}</Link>
       </div>
       <div className="navbar-user">

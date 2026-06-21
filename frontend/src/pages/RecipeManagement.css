@@ -1,0 +1,212 @@
+.rm-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rm-main h1 {
+  color: #2e7d32;
+  margin-bottom: 1.5rem;
+}
+
+.rm-loading {
+  color: #666;
+  font-style: italic;
+}
+
+.rm-error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Action buttons in each table row */
+.rm-action-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.rm-edit-btn {
+  background: #1565c0;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+
+.rm-edit-btn:hover {
+  background: #0d47a1;
+}
+
+.rm-delete-btn {
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+
+.rm-delete-btn:hover {
+  background: #b71c1c;
+}
+
+/* Edit modal overlay */
+.rm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.rm-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  width: 540px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.rm-modal-title {
+  color: #2e7d32;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.rm-modal-error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.rm-modal-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Form fields inside the modal */
+.rm-field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.rm-field-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.rm-field-group input,
+.rm-field-group select,
+.rm-field-group textarea {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.rm-field-group input:focus,
+.rm-field-group select:focus,
+.rm-field-group textarea:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px #c8e6c9;
+}
+
+.rm-field-error {
+  color: #c62828;
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+.rm-field-hint {
+  color: #777;
+  font-size: 0.78rem;
+  margin-top: 3px;
+}
+
+/* Macros row: calories / protein / carbs / fat side-by-side */
+.rm-number-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rm-number-row .rm-field-group {
+  flex: 1;
+  min-width: 90px;
+}
+
+/* Modal action buttons */
+.rm-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+
+.rm-save-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.rm-save-btn:hover:not(:disabled) {
+  background: #1b5e20;
+}
+
+.rm-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rm-cancel-btn {
+  background: #fff;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.rm-cancel-btn:hover {
+  border-color: #999;
+}
