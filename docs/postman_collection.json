@@ -1,50 +1,198 @@
 {
   "info": {
-    "name": "Nutrition Planning API",
-    "description": "Backend API for Smart Nutrition Planning System",
+    "name": "Smart Nutrition System — Assignment 4",
+    "description": "Full API collection. Import, then run 'Login as admin' and paste the returned token into the {{token}} collection variable before testing secured endpoints.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token",   "value": "",                      "type": "string" }
+  ],
   "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login as admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maya@example.com\",\n  \"password\": \"123456789\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Copy the returned data.token value into the {{token}} collection variable to authenticate all subsequent requests.",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - wrong password (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maya@example.com\",\n  \"password\": \"wrongpassword\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Expects 401 INVALID_PASSWORD error response.",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "description": "Stateless logout — always returns 200. Client is responsible for discarding the token.",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "Users",
       "item": [
         {
-          "name": "GET all users",
+          "name": "GET my profile",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "admin" }],
-            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "PUT update my profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maya.updated@example.com\",\n  \"password\": \"newpassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "GET my favorites",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/favorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me", "favorites"]
+            }
+          }
+        },
+        {
+          "name": "POST add favorite recipe",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Adds recipe ID 1 to the authenticated user's favorites.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/favorites/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me", "favorites", "1"]
+            }
+          }
+        },
+        {
+          "name": "DELETE remove favorite recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Removes recipe ID 1 from the authenticated user's favorites.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/favorites/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me", "favorites", "1"]
+            }
+          }
+        },
+        {
+          "name": "GET all users (admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Requires admin or nutritionist JWT. Returns full user list.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
           }
         },
         {
           "name": "GET user by ID",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "admin" }],
-            "url": { "raw": "http://localhost:3000/users/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "1"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
           }
         },
         {
           "name": "GET user not found (404)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "admin" }],
-            "url": { "raw": "http://localhost:3000/users/999", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "999"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Expects 404 USER_NOT_FOUND error response.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "999"]
+            }
           }
         },
         {
-          "name": "POST create user",
+          "name": "POST create user (admin)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "x-user-role", "value": "admin" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Oren\",\n  \"lastName\": \"Katz\",\n  \"userRole\": \"user\"\n}"
+              "raw": "{\n  \"firstName\": \"Oren\",\n  \"lastName\": \"Katz\",\n  \"email\": \"oren@example.com\",\n  \"password\": \"123456\",\n  \"userRole\": \"user\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+            "description": "Requires admin JWT. Creates a new user account.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
           }
         },
         {
@@ -52,45 +200,66 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "x-user-role", "value": "admin" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"lastName\": \"Katz\",\n  \"userRole\": \"user\"\n}"
+              "raw": "{\n  \"lastName\": \"Katz\",\n  \"userRole\": \"user\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+            "description": "Missing required fields (firstName, email, password). Expects 400 VALIDATION_ERROR.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
           }
         },
         {
-          "name": "PUT update user",
+          "name": "PUT update user (admin)",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "x-user-role", "value": "admin" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Dana\",\n  \"lastName\": \"Ben-Ami\",\n  \"userRole\": \"nutritionist\"\n}"
+              "raw": "{\n  \"firstName\": \"Dana\",\n  \"lastName\": \"Ben-Ami\",\n  \"userRole\": \"nutritionist\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/users/3", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "3"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/users/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "3"]
+            }
           }
         },
         {
-          "name": "DELETE user",
+          "name": "DELETE user (admin)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "x-user-role", "value": "admin" }],
-            "url": { "raw": "http://localhost:3000/users/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "5"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Requires admin JWT. Deletes user ID 5.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "5"]
+            }
           }
         },
         {
           "name": "DELETE user - forbidden (403)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "x-user-role", "value": "nutritionist" }],
-            "url": { "raw": "http://localhost:3000/users/4", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users", "4"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Use a nutritionist JWT in {{token}} — only admins can delete users. Expects 403 FORBIDDEN.",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "4"]
+            }
           }
         }
       ]
@@ -102,30 +271,36 @@
           "name": "GET all recipes",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "user" }],
-            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes"]
+            }
           }
         },
         {
-          "name": "GET recipes filter by mealType",
+          "name": "GET recipes - filter mealType=breakfast",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "user" }],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "http://localhost:3000/recipes?mealType=breakfast",
-              "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"],
+              "raw": "{{baseUrl}}/api/recipes?mealType=breakfast",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes"],
               "query": [{ "key": "mealType", "value": "breakfast" }]
             }
           }
         },
         {
-          "name": "GET recipes filter vegetarian",
+          "name": "GET recipes - filter isVegetarian=true",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "user" }],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "http://localhost:3000/recipes?isVegetarian=true",
-              "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"],
+              "raw": "{{baseUrl}}/api/recipes?isVegetarian=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes"],
               "query": [{ "key": "isVegetarian", "value": "true" }]
             }
           }
@@ -134,31 +309,46 @@
           "name": "GET recipe by ID",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "user" }],
-            "url": { "raw": "http://localhost:3000/recipes/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "1"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes", "1"]
+            }
           }
         },
         {
           "name": "GET recipe not found (404)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "x-user-role", "value": "user" }],
-            "url": { "raw": "http://localhost:3000/recipes/999", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "999"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Expects 404 RECIPE_NOT_FOUND error response.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes", "999"]
+            }
           }
         },
         {
-          "name": "POST create recipe",
+          "name": "POST create recipe (nutritionist)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "x-user-role", "value": "nutritionist" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"סלט ירקות טרי\",\n  \"description\": \"סלט ירקות פשוט וטעים\",\n  \"mealType\": \"lunch\",\n  \"calories\": 200,\n  \"protein\": 5,\n  \"carbs\": 25,\n  \"fat\": 8,\n  \"isVegetarian\": true,\n  \"allergens\": [],\n  \"prepTime\": 10\n}"
+              "raw": "{\n  \"name\": \"סלט ירקות טרי\",\n  \"description\": \"סלט ירקות פשוט וטעים\",\n  \"mealType\": \"lunch\",\n  \"calories\": 200,\n  \"protein\": 5,\n  \"carbs\": 25,\n  \"fat\": 8,\n  \"isVegetarian\": true,\n  \"allergens\": [],\n  \"prepTime\": 10,\n  \"instructions\": [\"קוצצים את הירקות לקוביות\", \"מערבבים עם שמן זית ולימון\"],\n  \"ingredients\": [\n    { \"name\": \"עגבניות\", \"amount\": \"2 יח'\" },\n    { \"name\": \"מלפפון\", \"amount\": \"1 יח'\" },\n    { \"name\": \"שמן זית\", \"amount\": \"1 כף\" }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+            "description": "Requires admin or nutritionist JWT.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes"]
+            }
           }
         },
         {
@@ -166,14 +356,20 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "x-user-role", "value": "nutritionist" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"mealType\": \"lunch\",\n  \"calories\": 200,\n  \"protein\": 5,\n  \"carbs\": 25,\n  \"fat\": 8\n}"
+              "raw": "{\n  \"mealType\": \"lunch\",\n  \"calories\": 200\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/recipes", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes"] }
+            "description": "Missing required fields (name, protein, carbs, fat). Expects 400 VALIDATION_ERROR.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes"]
+            }
           }
         },
         {
@@ -181,30 +377,223 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "x-user-role", "value": "nutritionist" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"שקשוקה ברוטב חריף\",\n  \"description\": \"שקשוקה ביתית עם פלפלים חריפים\",\n  \"mealType\": \"breakfast\",\n  \"calories\": 420,\n  \"protein\": 24,\n  \"carbs\": 38,\n  \"fat\": 16,\n  \"isVegetarian\": true,\n  \"allergens\": [\"eggs\"],\n  \"prepTime\": 25\n}"
+              "raw": "{\n  \"name\": \"שקשוקה ברוטב חריף\",\n  \"description\": \"שקשוקה ביתית עם פלפלים חריפים\",\n  \"mealType\": \"breakfast\",\n  \"calories\": 420,\n  \"protein\": 24,\n  \"carbs\": 38,\n  \"fat\": 16,\n  \"isVegetarian\": true,\n  \"allergens\": [\"eggs\"],\n  \"prepTime\": 25,\n  \"instructions\": [\"מחממים שמן במחבת\", \"מוסיפים פלפלים ועגבניות\", \"שוברים ביצים לתוך הרוטב\"],\n  \"ingredients\": [\n    { \"name\": \"ביצים\", \"amount\": \"3 יח'\" },\n    { \"name\": \"עגבניות\", \"amount\": \"2 יח'\" },\n    { \"name\": \"פלפל חריף\", \"amount\": \"1 יח'\" }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": { "raw": "http://localhost:3000/recipes/2", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "2"] }
+            "description": "Updates recipe ID 2. Ingredient list is replaced entirely.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes", "2"]
+            }
           }
         },
         {
-          "name": "DELETE recipe",
+          "name": "DELETE recipe (admin)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "x-user-role", "value": "admin" }],
-            "url": { "raw": "http://localhost:3000/recipes/6", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "6"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Requires admin or nutritionist JWT.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes", "6"]
+            }
           }
         },
         {
           "name": "DELETE recipe - forbidden (403)",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "x-user-role", "value": "nutritionist" }],
-            "url": { "raw": "http://localhost:3000/recipes/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["recipes", "5"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Use a regular user JWT in {{token}} — only admin and nutritionist can delete recipes. Expects 403 FORBIDDEN.",
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recipes", "6"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "GET settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Returns display preferences for the authenticated user. Returns defaults if not yet configured.",
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings"]
+            }
+          }
+        },
+        {
+          "name": "PUT update settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Maya\",\n  \"language\": \"he\",\n  \"emailNotifications\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "language must be 'he' or 'en'.",
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu Generation",
+      "item": [
+        {
+          "name": "POST generate menu - standard",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetCalories\": 1800,\n  \"goal\": \"health\",\n  \"vegetarianOnly\": false,\n  \"allergies\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Returns breakfast + lunch + dinner that sum within ±100 kcal of 1800. goal: 'health' = maintenance calories.",
+            "url": {
+              "raw": "{{baseUrl}}/api/menu/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menu", "generate"]
+            }
+          }
+        },
+        {
+          "name": "POST generate menu - scaling fallback (scaled: true)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetCalories\": 3500,\n  \"goal\": \"gain\",\n  \"vegetarianOnly\": false,\n  \"allergies\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "3500 kcal target cannot be matched by any recipe combination within ±100 kcal. The server falls back to portion-scaling the three highest-calorie recipes. Response includes scaled: true and scaleFactor.",
+            "url": {
+              "raw": "{{baseUrl}}/api/menu/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menu", "generate"]
+            }
+          }
+        },
+        {
+          "name": "POST generate menu - vegetarian filter",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetCalories\": 1500,\n  \"goal\": \"loss\",\n  \"vegetarianOnly\": true,\n  \"allergies\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "goal: 'loss' applies a -500 kcal deficit before generation. Only vegetarian recipes are considered.",
+            "url": {
+              "raw": "{{baseUrl}}/api/menu/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "menu", "generate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Nutrition Assistant",
+      "item": [
+        {
+          "name": "POST AI chat (SSE stream)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profile\": {\n    \"age\": 28,\n    \"weight\": 70,\n    \"height\": 175,\n    \"goal\": \"health\",\n    \"calories\": 1800,\n    \"vegetarianOnly\": false,\n    \"allergies\": []\n  },\n  \"menu\": {\n    \"breakfast\": { \"name\": \"חביתת ירקות\",       \"calories\": 380, \"protein\": 20, \"carbs\": 22, \"fat\": 18 },\n    \"lunch\":     { \"name\": \"סלמון בתנור\",        \"calories\": 520, \"protein\": 42, \"carbs\": 18, \"fat\": 24 },\n    \"dinner\":    { \"name\": \"חזה עוף על האדים\",  \"calories\": 450, \"protein\": 45, \"carbs\": 30, \"fat\": 10 }\n  },\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"האם צריכת החלבון שלי מספיקה?\" }\n  ],\n  \"lang\": \"he\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Response is a Server-Sent Events (SSE) stream. The GROQ_API_KEY is never exposed — the backend proxies the Groq request. Each SSE line: data: {\"success\":true,\"data\":{\"text\":\"...\"}}. Final line: data: {\"success\":true,\"data\":{\"done\":true}}. Postman buffers and shows all lines in the response body.",
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "chat"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat History",
+      "item": [
+        {
+          "name": "GET chat history - own user (userId=4)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Use a JWT for Dana Israeli (userId=3, role=user). Returns her own support chat messages ordered by createdAt ASC.",
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/history/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "history", "3"]
+            }
+          }
+        },
+        {
+          "name": "GET chat history - by nutritionist (any user)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Use a nutritionist JWT in {{token}} (e.g. Avi Levi, avi@example.com). Nutritionists can fetch any user's chat history.",
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/history/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "history", "3"]
+            }
+          }
+        },
+        {
+          "name": "GET chat history - forbidden (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "description": "Use Dana Israeli's JWT (userId=3, role=user). Requesting history for userId=1 (admin Maya) — expects 403 FORBIDDEN.",
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/history/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "history", "1"]
+            }
           }
         }
       ]

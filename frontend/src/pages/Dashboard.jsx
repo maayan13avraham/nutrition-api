@@ -66,6 +66,7 @@ export default function Dashboard() {
     setLoading(true);
     setFetchError('');
     setGeneratedMenu(null);
+    setOverrides({});
     generateMenu(profile)
       .then((res) => {
         if (res.success) setGeneratedMenu(res.data);
@@ -139,16 +140,29 @@ export default function Dashboard() {
     dinner:    displayedDinner,
   }), [displayedBreakfast, displayedLunch, displayedDinner]);
 
-  // Map of meal slot to the name of the currently displayed recipe, used to mark table rows
-  const currentNames = {
-    breakfast: displayedBreakfast?.name,
-    lunch: displayedLunch?.name,
-    dinner: displayedDinner?.name,
+  // Scale factor + label to apply when the backend returned a scaled (high-calorie) menu
+  const scaleInfo = generatedMenu?.scaled
+    ? { factor: generatedMenu.scaleFactor }
+    : null;
+
+  // Map of meal slot to the recipeId of the currently displayed recipe, used to mark table rows
+  const currentIds = {
+    breakfast: displayedBreakfast?.recipeId,
+    lunch:     displayedLunch?.recipeId,
+    dinner:    displayedDinner?.recipeId,
   };
 
-  // Replace the auto-selected recipe for a meal slot with the user's chosen recipe
+  // Replace the auto-selected recipe for a meal slot with the user's chosen recipe.
+  // When in scaled mode, apply the same multiplier so the daily total stays correct.
   function handleSwap(recipe) {
-    setOverrides((prev) => ({ ...prev, [recipe.mealType]: recipe }));
+    const final = scaleInfo ? {
+      ...recipe,
+      calories: Math.round(recipe.calories * scaleInfo.factor),
+      protein:  Math.round(recipe.protein  * scaleInfo.factor * 10) / 10,
+      carbs:    Math.round(recipe.carbs    * scaleInfo.factor * 10) / 10,
+      fat:      Math.round(recipe.fat      * scaleInfo.factor * 10) / 10,
+    } : recipe;
+    setOverrides((prev) => ({ ...prev, [recipe.mealType]: final }));
   }
 
   // Column definitions for the compatible recipes table including the swap action column
@@ -165,7 +179,7 @@ export default function Dashboard() {
       label: t.table.swapLabel,
       // Show a "current" badge for the active recipe or a swap button for all other compatible options
       render: (_, row) => {
-        const isCurrent = currentNames[row.mealType] === row.name;
+        const isCurrent = currentIds[row.mealType] === row.recipeId;
         return isCurrent
           ? <span className="current-meal-chip">{t.table.currentMeal}</span>
           : <button className="swap-row-btn" onClick={() => handleSwap(row)}>{t.table.swapTo[row.mealType]}</button>;
@@ -308,7 +322,7 @@ export default function Dashboard() {
                 : <Table
                     columns={tableColumns}
                     rows={compatibleRecipes}
-                    getRowClass={(row) => currentNames[row.mealType] === row.name ? 'row-highlighted' : ''}
+                    getRowClass={(row) => currentIds[row.mealType] === row.recipeId ? 'row-highlighted' : ''}
                   />}
             </section>
 

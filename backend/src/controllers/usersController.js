@@ -32,8 +32,7 @@ async function getUsers(req, res) {
 
 async function getMe(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', { field: 'x-user-id' });
+    const userId = req.user.userId;
     const user = await User.findByPk(userId);
     if (!user) return fail(res, 'NOT_FOUND', `User with id ${userId} not found`, {}, 404);
     ok(res, user);
@@ -44,8 +43,7 @@ async function getMe(req, res) {
 
 async function updateMe(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', { field: 'x-user-id' });
+    const userId = req.user.userId;
     const { email, password } = req.body;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email))
@@ -67,8 +65,8 @@ async function getUserById(req, res) {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return fail(res, 'VALIDATION_ERROR', 'Invalid user ID', { field: 'id' });
-    const role = req.headers['x-user-role'];
-    const requesterId = parseInt(req.headers['x-user-id']);
+    const role = req.user.userRole;
+    const requesterId = req.user.userId;
     if (role === 'user' && id !== requesterId)
       return fail(res, 'FORBIDDEN', 'You can only access your own data', {}, 403);
     const user = await User.findByPk(id);
@@ -96,8 +94,8 @@ async function updateUser(req, res) {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return fail(res, 'VALIDATION_ERROR', 'Invalid user ID', { field: 'id' });
-    const role = req.headers['x-user-role'];
-    const requesterId = parseInt(req.headers['x-user-id']);
+    const role = req.user.userRole;
+    const requesterId = req.user.userId;
     if (role === 'user' && id !== requesterId)
       return fail(res, 'FORBIDDEN', 'You can only update your own data', {}, 403);
     const err = validateBody(req.body);
@@ -128,8 +126,7 @@ async function deleteUser(req, res) {
 // Favorites — many-to-many: User ↔ Recipe via user_favorite_recipes junction
 async function getFavorites(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', { field: 'x-user-id' });
+    const userId = req.user.userId;
     const user = await User.findByPk(userId);
     if (!user) return fail(res, 'NOT_FOUND', `User with id ${userId} not found`, {}, 404);
     const favorites = await user.getFavoriteRecipes();
@@ -141,9 +138,8 @@ async function getFavorites(req, res) {
 
 async function addFavorite(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
+    const userId = req.user.userId;
     const recipeId = parseInt(req.params.recipeId);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', { field: 'x-user-id' });
     if (isNaN(recipeId)) return fail(res, 'VALIDATION_ERROR', 'Invalid recipe ID', { field: 'recipeId' });
     const user = await User.findByPk(userId);
     if (!user) return fail(res, 'NOT_FOUND', `User with id ${userId} not found`, {}, 404);
@@ -158,9 +154,8 @@ async function addFavorite(req, res) {
 
 async function removeFavorite(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
+    const userId = req.user.userId;
     const recipeId = parseInt(req.params.recipeId);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', { field: 'x-user-id' });
     if (isNaN(recipeId)) return fail(res, 'VALIDATION_ERROR', 'Invalid recipe ID', { field: 'recipeId' });
     const user = await User.findByPk(userId);
     if (!user) return fail(res, 'NOT_FOUND', `User with id ${userId} not found`, {}, 404);

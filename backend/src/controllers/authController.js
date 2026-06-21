@@ -1,4 +1,7 @@
+const jwt = require('jsonwebtoken');
 const { User } = require('../../models');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 
 function ok(res, data, status = 200) {
   return res.status(status).json({ success: true, data, error: null });
@@ -21,7 +24,8 @@ async function login(req, res) {
     if (user.password !== password)
       return fail(res, 'INVALID_PASSWORD', 'Incorrect password', {}, 401);
     const { userId, firstName, lastName, userRole } = user;
-    return ok(res, { userId, firstName, lastName, userRole });
+    const token = jwt.sign({ userId, userRole }, JWT_SECRET, { expiresIn: '8h' });
+    return ok(res, { token, userId, firstName, lastName, userRole });
   } catch (err) {
     fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
   }

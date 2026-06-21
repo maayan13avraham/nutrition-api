@@ -5,11 +5,10 @@ const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
 });
 
-// Attach user identity headers to every outgoing request using the stored session
+// Attach the JWT Bearer token to every outgoing request
 api.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (user.userId) config.headers['x-user-id'] = user.userId;
-  if (user.userRole) config.headers['x-user-role'] = user.userRole;
+  const token = localStorage.getItem('token');
+  if (token) config.headers['Authorization'] = `Bearer ${token}`;
   return config;
 });
 

@@ -69,3 +69,17 @@ CREATE TABLE IF NOT EXISTS user_settings (
   emailNotifications BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );
+
+-- Support chat message persistence (created by sequelize.sync on first start, also defined here for completeness)
+CREATE TABLE IF NOT EXISTS support_messages (
+  messageId   INT           NOT NULL AUTO_INCREMENT,
+  userId      INT           NOT NULL,
+  senderRole  ENUM('user','nutritionist') NOT NULL,
+  senderId    INT           NOT NULL,
+  senderName  VARCHAR(100)  DEFAULT NULL,
+  content     TEXT          NOT NULL,
+  createdAt   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (messageId),
+  CONSTRAINT fk_support_messages_user
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,129 @@
+.admin-main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-main h1 {
+  color: #2e7d32;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+}
+
+.admin-error {
+  background: #fdecea;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-loading {
+  color: #555;
+  font-size: 1rem;
+  padding: 1rem 0;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.admin-table thead tr {
+  background: #2e7d32;
+  color: #fff;
+  text-align: left;
+}
+
+.admin-table thead th {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.admin-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.15s;
+}
+
+.admin-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+  background: #f1f8e9;
+}
+
+.admin-table td {
+  padding: 0.65rem 1rem;
+  vertical-align: middle;
+}
+
+.admin-table td.user-id {
+  color: #888;
+  font-size: 0.8rem;
+  width: 48px;
+}
+
+.role-select {
+  border: 1px solid #a5d6a7;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  color: #2e7d32;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.role-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 2px #c8e6c9;
+}
+
+.role-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-btn {
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.delete-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.you-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  vertical-align: middle;
+  font-weight: 600;
+}

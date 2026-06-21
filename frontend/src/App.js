@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
@@ -23,10 +23,14 @@ function ProtectedRoute({ children, allowedRoles }) {
   return children;
 }
 
-// Renders SupportChat only when a session exists. Lives inside BrowserRouter so it
-// re-evaluates on every navigation (BrowserRouter re-renders its children on location change).
+// Renders SupportChat only for logged-in regular users. useLocation() subscribes this
+// component to the router's location context so it re-renders on every navigation —
+// including the navigate() call in LoginPage after localStorage is written.
 function ConditionalSupportChat() {
-  return localStorage.getItem('user') ? <SupportChat /> : null;
+  useLocation();
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (!user || ['nutritionist', 'admin'].includes(user.userRole)) return null;
+  return <SupportChat key={user.userId} />;
 }
 
 // Root component that wraps the app in language support and defines all client-side routes

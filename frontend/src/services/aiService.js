@@ -1,12 +1,11 @@
 const BASE_URL = process.env.REACT_APP_API_URL;
 
-// Build auth headers from the stored session for use with the native fetch API
+// Build auth headers for use with the native fetch API (bypasses the axios interceptor)
 function getAuthHeaders() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
-    'x-user-id': user.userId || '',
-    'x-user-role': user.userRole || '',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
 }
 

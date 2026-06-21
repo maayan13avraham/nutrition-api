@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getMe } from '../services/usersService';
 import { logout } from '../services/authService';
+import { disconnect as disconnectSocket, notifyNutritionistOffline } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import './Navbar.css';
 
@@ -22,6 +23,8 @@ export default function Navbar() {
   // Call the logout endpoint, clear the local session, and redirect to login
   async function handleLogout() {
     await logout();
+    if (userRole === 'nutritionist') notifyNutritionistOffline();
+    disconnectSocket();
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login');

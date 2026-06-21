@@ -13,8 +13,7 @@ function fail(res, code, message, details = {}, status = 400) {
 
 async function getSettings(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', {});
+    const userId = req.user.userId;
     const settings = await UserSettings.findByPk(userId);
     ok(res, settings || { ...DEFAULTS });
   } catch (err) {
@@ -24,8 +23,7 @@ async function getSettings(req, res) {
 
 async function updateSettings(req, res) {
   try {
-    const userId = parseInt(req.headers['x-user-id']);
-    if (isNaN(userId)) return fail(res, 'VALIDATION_ERROR', 'Missing x-user-id header', {});
+    const userId = req.user.userId;
     const { displayName, language, emailNotifications } = req.body;
     if (!displayName || typeof displayName !== 'string' || !displayName.trim())
       return fail(res, 'VALIDATION_ERROR', 'displayName is required', { field: 'displayName' });

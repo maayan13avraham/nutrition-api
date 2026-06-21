@@ -1,71 +1,75 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { connect, joinRoom, sendMessage, emitTyping, disconnect } from '../services/socketService';
+import { connect, sendSupportMessage, onNutritionistStatus, offNutritionistStatus } from '../services/socketService';
+import api from '../services/api';
 import './SupportChat.css';
 
 export default function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [typingUser, setTypingUser] = useState('');
-  const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isNutritionistOnline, setIsNutritionistOnline] = useState(false);
 
   const bottomRef = useRef(null);
-  const typingTimer = useRef(null);
   const isOpenRef = useRef(isOpen);
   isOpenRef.current = isOpen;
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const currentUserId = currentUser.userId;
+  // Load persisted chat history once on mount
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!stored.userId) return;
+    api.get(`/api/chat/history/${stored.userId}`)
+      .then(({ data }) => {
+        if (!data.success) return;
+        setMessages(data.data.map((m) => ({
+          self:      m.senderRole === 'user',
+          from:      m.senderRole === 'nutritionist' ? (m.senderName || 'תזונאי') : undefined,
+          content:   m.content,
+          timestamp: m.createdAt,
+        })));
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
+    const handlePrivateMessage = ({ from, content, timestamp }) => {
+      setMessages((prev) => [...prev, { self: false, from, content, timestamp }]);
+      if (!isOpenRef.current) setUnreadCount((c) => c + 1);
+    };
+
+    const handleNutritionistStatus = ({ online }) => {
+      setIsNutritionistOnline(online);
+    };
+
     const socket = connect();
-    joinRoom();
-
-    socket.on('receive_message', (msg) => {
-      setMessages((prev) => [...prev, msg]);
-      if (!isOpenRef.current) {
-        setUnreadCount((c) => c + 1);
-      }
-    });
-
-    socket.on('user_typing', ({ firstName }) => {
-      setTypingUser(firstName);
-      clearTimeout(typingTimer.current);
-      typingTimer.current = setTimeout(() => setTypingUser(''), 2000);
-    });
-
-    socket.on('online_users', (users) => {
-      setOnlineUsers(users);
-    });
+    socket.on('private_message', handlePrivateMessage);
+    onNutritionistStatus(handleNutritionistStatus);
 
     return () => {
-      socket.off('receive_message');
-      socket.off('user_typing');
-      socket.off('online_users');
-      disconnect();
+      socket.off('private_message', handlePrivateMessage);
+      offNutritionistStatus(handleNutritionistStatus);
     };
   }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, typingUser]);
+  }, [messages]);
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
     setUnreadCount(0);
   }, []);
 
-  const handleChange = useCallback((e) => {
-    setInput(e.target.value);
-    emitTyping();
-  }, []);
-
   const handleSend = useCallback((e) => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) return;
-    sendMessage(trimmed);
+    sendSupportMessage(trimmed);
+    setMessages((prev) => [...prev, {
+      self: true,
+      content: trimmed,
+      timestamp: new Date().toISOString(),
+    }]);
     setInput('');
   }, [input]);
 
@@ -88,9 +92,6 @@ export default function SupportChat() {
           <div className="ai-chat-header-bar support-chat-header">
             <span className="ai-icon">👨‍⚕️</span>
             <span className="ai-title">תמיכת תזונאי</span>
-            <span className="support-online-count">
-              {onlineUsers.length} מחוברים
-            </span>
             <button
               className="support-chat-close"
               onClick={() => setIsOpen(false)}
@@ -100,39 +101,24 @@ export default function SupportChat() {
             </button>
           </div>
 
+          <div className={`nutritionist-status-badge${isNutritionistOnline ? ' status-online' : ' status-offline'}`}>
+            <span className="status-dot" />
+            <span>{isNutritionistOnline ? 'תזונאי זמין בצ\'אט' : 'אין תזונאי זמין כרגע'}</span>
+          </div>
+
           <div className="support-chat-body ai-chat-body">
             {messages.length === 0 && (
               <p className="support-chat-empty">שלח הודעה לתמיכת תזונאי 👋</p>
             )}
-            {messages.map((m, i) =>
-              m.system ? (
-                <div key={i} className="support-chat-system">
-                  {m.content}
-                </div>
-              ) : (
-                <div
-                  key={i}
-                  className={`chat-bubble ${
-                    m.userId === currentUserId
-                      ? 'chat-bubble-user'
-                      : 'chat-bubble-assistant'
-                  }`}
-                >
-                  {m.userId !== currentUserId && (
-                    <span className="support-sender">{m.firstName}</span>
-                  )}
-                  {m.content}
-                </div>
-              )
-            )}
-            {typingUser && (
-              <div className="support-typing">
-                <div className="typing-indicator">
-                  <span /><span /><span />
-                </div>
-                <span className="support-typing-name">{typingUser} מקליד...</span>
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`chat-bubble ${m.self ? 'chat-bubble-user' : 'chat-bubble-assistant'}`}
+              >
+                {!m.self && <span className="support-sender">{m.from}</span>}
+                {m.content}
               </div>
-            )}
+            ))}
             <div ref={bottomRef} />
           </div>
 
@@ -141,7 +127,7 @@ export default function SupportChat() {
               className="ai-input"
               placeholder="כתוב הודעה..."
               value={input}
-              onChange={handleChange}
+              onChange={(e) => setInput(e.target.value)}
               autoFocus
             />
             <button className="ai-send-btn" type="submit" disabled={!input.trim()}>

@@ -16,6 +16,16 @@ function filterAllergens(recipes, allergies) {
   return recipes.filter((r) => !allergies.some((a) => (r.allergens || []).includes(a)));
 }
 
+function scaleRecipe(recipe, factor) {
+  return {
+    ...recipe,
+    calories: Math.round(recipe.calories * factor),
+    protein:  Math.round(recipe.protein  * factor * 10) / 10,
+    carbs:    Math.round(recipe.carbs    * factor * 10) / 10,
+    fat:      Math.round(recipe.fat      * factor * 10) / 10,
+  };
+}
+
 async function generateMenu(req, res) {
   try {
     const { targetCalories, goal, vegetarianOnly, allergies: rawAllergies } = req.body;
@@ -67,7 +77,25 @@ async function generateMenu(req, res) {
     }
 
     if (!best) {
-      return fail(res, 'NO_MATCH', 'No combination of recipes meets the calorie target within the allowed margin', {}, 404);
+      if (!bList.length || !lList.length || !dList.length) {
+        return fail(res, 'NO_MATCH', 'No recipes available for one or more meal types with current filters', {}, 404);
+      }
+
+      const topB = [...bList].sort((a, b) => b.calories - a.calories)[0];
+      const topL = [...lList].sort((a, b) => b.calories - a.calories)[0];
+      const topD = [...dList].sort((a, b) => b.calories - a.calories)[0];
+
+      const rawTotal = topB.calories + topL.calories + topD.calories;
+      const scale    = targetCalories / rawTotal;
+
+      return ok(res, {
+        breakfast:     scaleRecipe(topB, scale),
+        lunch:         scaleRecipe(topL, scale),
+        dinner:        scaleRecipe(topD, scale),
+        totalCalories: targetCalories,
+        scaled:        true,
+        scaleFactor:   scale,
+      });
     }
 
     return ok(res, best);

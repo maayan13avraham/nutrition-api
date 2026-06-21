@@ -2,7 +2,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const { sequelize, User, Admin, Recipe, Ingredient, UserSettings } = require('../models');
 
 const seedUsers = [
-  { userId: 1, firstName: 'Maya',  lastName: 'Cohen',     email: 'maya@example.com',  password: '123456', userRole: 'admin',        createDate: '2025-01-10T08:00:00Z', updateDate: '2025-01-10T08:00:00Z' },
+  { userId: 1, firstName: 'Maya',  lastName: 'Cohen',     email: 'maya@example.com',  password: '123456789', userRole: 'admin',        createDate: '2025-01-10T08:00:00Z', updateDate: '2025-01-10T08:00:00Z' },
   { userId: 2, firstName: 'Avi',   lastName: 'Levi',      email: 'avi@example.com',   password: '123456', userRole: 'nutritionist', createDate: '2025-01-12T09:00:00Z', updateDate: '2025-01-12T09:00:00Z' },
   { userId: 3, firstName: 'Dana',  lastName: 'Israeli',   email: 'dana@example.com',  password: '123456', userRole: 'user',         createDate: '2025-01-14T10:00:00Z', updateDate: '2025-01-14T10:00:00Z' },
   { userId: 4, firstName: 'Yossi', lastName: 'Ben-David', email: 'yossi@example.com', password: '123456', userRole: 'user',         createDate: '2025-01-15T11:00:00Z', updateDate: '2025-01-15T11:00:00Z' },

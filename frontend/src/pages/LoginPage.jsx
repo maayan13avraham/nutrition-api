@@ -37,8 +37,11 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login(email, password);
-      localStorage.setItem('user', JSON.stringify(res.data));
-      navigate('/dashboard');
+      const { token, ...userFields } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userFields));
+      const roleRoutes = { admin: '/admin', nutritionist: '/nutritionist', user: '/dashboard' };
+      navigate(roleRoutes[userFields.userRole] || '/dashboard');
     } catch (err) {
       const code = err?.response?.data?.error?.code;
       if (code === 'USER_NOT_FOUND') {
