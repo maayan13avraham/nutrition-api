@@ -219,7 +219,21 @@ All responses follow the standard envelope format:
 
 All endpoints except `/api/auth/login` and `/api/auth/logout` require a JWT Bearer token in the `Authorization` header.
 
-A ready-to-import Postman collection covering all 35 requests is available at `docs/postman_collection.json`. Import it, run **Login as admin**, then paste the returned token into the `{{token}}` collection variable.
+### Using the Postman Collection
+
+A ready-to-import collection covering all 35 requests is available at `docs/postman_collection.json`.
+
+**One-time setup to authenticate:**
+
+1. In Postman, click **Import** → select `docs/postman_collection.json`.
+2. Open the **Auth** folder and run **Login as admin**
+   (pre-filled: `maya@example.com` / `123456789`).
+3. In the response body, copy the value of `data.token`.
+4. Click the collection name in the sidebar → **Variables** tab.
+5. Paste the token into the **Current Value** column of the `token` row.
+6. Click **Save**. All 35 requests now send `Authorization: Bearer <token>` automatically.
+
+> To test as a different user, run the matching login request in the Auth folder, copy its token, and update the `token` variable the same way.
 
 ---
 
@@ -232,7 +246,7 @@ A ready-to-import Postman collection covering all 35 requests is available at `d
 
 **Login request body:**
 ```json
-{ "email": "maya@example.com", "password": "123456" }
+{ "email": "maya@example.com", "password": "123456789" }
 ```
 
 **Login success response `data`:**
