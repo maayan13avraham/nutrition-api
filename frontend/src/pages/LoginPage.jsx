@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import { login, register } from '../services/authService';
 import { useLanguage } from '../context/LanguageContext';
 import './LoginPage.css';
 
@@ -45,8 +45,10 @@ export default function LoginPage() {
     } catch (err) {
       const code = err?.response?.data?.error?.code;
       if (code === 'USER_NOT_FOUND') {
-        // New visitor — create a guest session and let the questionnaire handle registration
-        localStorage.setItem('user', JSON.stringify({ userId: null, firstName: '', lastName: '', userRole: 'user', isGuest: true, email }));
+        const regRes = await register(email, password);
+        const { token: regToken, ...regFields } = regRes.data;
+        localStorage.setItem('token', regToken);
+        localStorage.setItem('user', JSON.stringify({ ...regFields, email }));
         navigate('/dashboard');
       } else if (code === 'INVALID_PASSWORD') {
         setServerError(t.login.errWrongPassword);

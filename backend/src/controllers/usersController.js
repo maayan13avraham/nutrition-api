@@ -1,4 +1,4 @@
-const { User, Recipe, UserFavoriteRecipe } = require('../../models');
+const { sequelize, User, UserSettings, Recipe, UserFavoriteRecipe } = require('../../models');
 
 const VALID_ROLES = ['admin', 'nutritionist', 'user'];
 
@@ -78,14 +78,27 @@ async function getUserById(req, res) {
 }
 
 async function createUser(req, res) {
+  const t = await sequelize.transaction();
   try {
     const err = validateBody(req.body);
-    if (err) return fail(res, 'VALIDATION_ERROR', err.message, { field: err.field });
+    if (err) {
+      await t.rollback();
+      return fail(res, 'VALIDATION_ERROR', err.message, { field: err.field });
+    }
     const { firstName, lastName, userRole } = req.body;
     const now = new Date();
-    const user = await User.create({ firstName: firstName.trim(), lastName: lastName.trim(), userRole, createDate: now, updateDate: now });
+    const user = await User.create(
+      { firstName: firstName.trim(), lastName: lastName.trim(), userRole, createDate: now, updateDate: now },
+      { transaction: t }
+    );
+    await UserSettings.create(
+      { userId: user.userId, displayName: firstName.trim(), language: 'he', emailNotifications: true },
+      { transaction: t }
+    );
+    await t.commit();
     ok(res, { userId: user.userId }, 201);
   } catch (err) {
+    await t.rollback();
     fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
   }
 }

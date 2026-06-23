@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const { t, switchLanguage } = useLanguage();
 
   // Profile settings state (display name, language, email notifications)
-  const [form, setForm] = useState({ displayName: '', language: 'he', emailNotifications: false });
+  const [form, setForm] = useState({ firstName: '', lastName: '', language: 'he', emailNotifications: false });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -52,7 +52,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setProfileSuccess('');
     setProfileError('');
-    if (!form.displayName.trim()) { setProfileValidationErr(t.settings.errDisplayName); return; }
+    if (!form.firstName.trim()) { setProfileValidationErr(t.settings.errFirstName); return; }
     setProfileValidationErr('');
     setSaving(true);
     try {
@@ -116,9 +116,13 @@ export default function SettingsPage() {
             {/* Section 1: profile preferences (display name, language, notifications) */}
             <form onSubmit={handleProfileSubmit} className="settings-form" noValidate>
               <div className="field-group">
-                <label>{t.settings.displayNameLabel}</label>
-                <input name="displayName" value={form.displayName} onChange={handleProfileChange} />
+                <label>{t.settings.firstNameLabel}</label>
+                <input name="firstName" value={form.firstName} onChange={handleProfileChange} />
                 {profileValidationErr && <span className="error-msg">{profileValidationErr}</span>}
+              </div>
+              <div className="field-group">
+                <label>{t.settings.lastNameLabel}</label>
+                <input name="lastName" value={form.lastName} onChange={handleProfileChange} />
               </div>
               <div className="field-group">
                 <label>{t.settings.languageLabel}</label>

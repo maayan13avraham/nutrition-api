@@ -141,6 +141,29 @@
   cursor: not-allowed;
 }
 
+/* ── Allergen checkboxes ─────────────────────────────────── */
+
+.allergens-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 20px;
+  margin-top: 6px;
+}
+
+/* Higher specificity (0-2-0) beats .nutritionist-form label (0-1-1) */
+.nutritionist-form .allergen-checkbox-label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #444;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* ── Live Support Panel ──────────────────────────────────── */
 
 .support-section {

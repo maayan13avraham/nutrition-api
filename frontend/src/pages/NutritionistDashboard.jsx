@@ -9,7 +9,9 @@ import './NutritionistDashboard.css';
 
 const MEAL_TYPE_KEYS = ['breakfast', 'lunch', 'dinner'];
 
-const EMPTY_FORM = { name: '', mealType: '', calories: '', protein: '', carbs: '', fat: '', ingredients: '', instructions: '' };
+const EMPTY_FORM = { name: '', description: '', mealType: '', calories: '', protein: '', carbs: '', fat: '', isVegetarian: false, allergens: [], ingredients: '', instructions: '' };
+
+const ALLERGEN_KEYS = ['eggs', 'dairy', 'gluten', 'nuts', 'fish', 'soy'];
 
 export default function NutritionistDashboard() {
   const { t } = useLanguage();
@@ -118,11 +120,20 @@ export default function NutritionistDashboard() {
   }
 
   function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     setSuccess('');
     setServerError('');
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  }
+
+  function toggleAllergen(key) {
+    setForm((prev) => ({
+      ...prev,
+      allergens: prev.allergens.includes(key)
+        ? prev.allergens.filter((a) => a !== key)
+        : [...prev.allergens, key],
+    }));
   }
 
   async function handleSubmit(e) {
@@ -145,11 +156,14 @@ export default function NutritionistDashboard() {
 
       await createRecipe({
         name: form.name.trim(),
+        description: form.description.trim(),
         mealType: form.mealType,
         calories: Number(form.calories),
         protein: Number(form.protein),
         carbs: Number(form.carbs),
         fat: Number(form.fat),
+        isVegetarian: form.isVegetarian,
+        allergens: form.allergens,
         ingredients: ingredientsList,
         instructions: instructionsList,
       });
@@ -203,6 +217,15 @@ export default function NutritionistDashboard() {
             </div>
 
             <div className="field-group">
+              <label htmlFor="description">{tn.descriptionLabel}</label>
+              <textarea
+                id="description" name="description" rows={3}
+                value={form.description} onChange={handleChange}
+                placeholder={tn.descriptionPlaceholder}
+              />
+            </div>
+
+            <div className="field-group">
               <label htmlFor="calories">{tn.caloriesLabel}</label>
               <input
                 id="calories" name="calories" type="number" min="1" step="any"
@@ -244,6 +267,34 @@ export default function NutritionistDashboard() {
                 />
                 {errors.fat && <span className="error-msg">{errors.fat}</span>}
               </div>
+            </div>
+
+            <div className="field-group">
+              <label>{tn.allergensLabel}</label>
+              <div className="allergens-grid">
+                {ALLERGEN_KEYS.map((key) => (
+                  <label key={key} className="allergen-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={form.allergens.includes(key)}
+                      onChange={() => toggleAllergen(key)}
+                    />
+                    {t.dashboard.allergens[key]}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="field-group">
+              <label className="allergen-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="isVegetarian"
+                  checked={form.isVegetarian}
+                  onChange={handleChange}
+                />
+                {tn.isVegetarianLabel}
+              </label>
             </div>
 
             <div className="field-group">
