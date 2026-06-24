@@ -1,4 +1,4 @@
-const { Recipe } = require('../../models');
+const { Recipe, Ingredient } = require('../../models');
 
 const VALID_GOALS = ['loss', 'gain', 'health'];
 const TOLERANCE = 100;
@@ -39,13 +39,18 @@ async function generateMenu(req, res) {
     const where = {};
     if (vegetarianOnly) where.isVegetarian = true;
 
+    const include = [{ model: Ingredient, as: 'ingredients' }];
     const [breakfastRows, lunchRows, dinnerRows] = await Promise.all([
-      Recipe.findAll({ where: { ...where, mealType: 'breakfast' } }),
-      Recipe.findAll({ where: { ...where, mealType: 'lunch' } }),
-      Recipe.findAll({ where: { ...where, mealType: 'dinner' } }),
+      Recipe.findAll({ where: { ...where, mealType: 'breakfast' }, include }),
+      Recipe.findAll({ where: { ...where, mealType: 'lunch'    }, include }),
+      Recipe.findAll({ where: { ...where, mealType: 'dinner'   }, include }),
     ]);
 
-    const toPlain = (rows) => rows.map((r) => r.get({ plain: true }));
+    const toPlain = (rows) => rows.map((r) => {
+      const p = r.get({ plain: true });
+      p.ingredients = (p.ingredients || []).map(i => ({ name: i.name, amount: i.amount }));
+      return p;
+    });
     const bList = filterAllergens(toPlain(breakfastRows), allergies);
     const lList = filterAllergens(toPlain(lunchRows), allergies);
     const dList = filterAllergens(toPlain(dinnerRows), allergies);
