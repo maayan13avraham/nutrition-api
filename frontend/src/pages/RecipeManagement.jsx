@@ -80,7 +80,9 @@ export default function RecipeManagement() {
       isVegetarian: !!recipe.isVegetarian,
       allergens: recipe.allergens || [],
       prepTime: recipe.prepTime || 0,
-      ingredients: (recipe.ingredients || []).map((i) => i.name).join(', '),
+      ingredients: (recipe.ingredients || [])
+        .map((i) => (i.amount ? `${i.name} (${i.amount})` : i.name))
+        .join(', '),
       instructions: (recipe.instructions || []).join('\n'),
     });
     setEditErrors({});
@@ -113,7 +115,12 @@ export default function RecipeManagement() {
         allergens: editForm.allergens,
         prepTime: Number(editForm.prepTime) || 0,
         ingredients: editForm.ingredients
-          .split(',').map((s) => ({ name: s.trim(), amount: '' })).filter((i) => i.name),
+          .split(',')
+          .map((s) => {
+            const match = s.trim().match(/^(.+?)\s*\(([^)]+)\)$/);
+            return match ? { name: match[1].trim(), amount: match[2].trim() } : { name: s.trim(), amount: '' };
+          })
+          .filter((i) => i.name),
         instructions: editForm.instructions
           .split('\n').map((s) => s.trim()).filter(Boolean),
       };

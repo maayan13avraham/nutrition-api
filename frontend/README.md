@@ -79,7 +79,7 @@ npm install
 Create a `.env` file in the project root:
 
 ```
-REACT_APP_API_URL=http://localhost:3000
+REACT_APP_API_URL=http://localhost:5173
 ```
 
 ### Running Locally
