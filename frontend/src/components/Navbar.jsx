@@ -48,6 +48,7 @@ export default function Navbar() {
     disconnectSocket();
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('nutritionist_unread');
     navigate('/login');
   }
 

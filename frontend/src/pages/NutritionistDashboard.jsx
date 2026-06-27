@@ -28,7 +28,9 @@ export default function NutritionistDashboard() {
   // threads: { [userId]: { username, messages: [{ self, from?, content, timestamp }] } }
   const [threads, setThreadsState] = useState(() => threadCache);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [unread, setUnreadState] = useState(() => unreadCache);
+  const [unread, setUnreadState] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('nutritionist_unread') || '{}'); } catch { return {}; }
+  });
   const [replyInput, setReplyInput] = useState('');
   const [loadedThreads, setLoadedThreadsState] = useState(() => loadedThreadsCache);
   const [dismissed, setDismissedState] = useState(() => dismissedCache);
@@ -44,6 +46,7 @@ export default function NutritionistDashboard() {
     setUnreadState((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
       unreadCache = next;
+      localStorage.setItem('nutritionist_unread', JSON.stringify(next));
       return next;
     });
   }
