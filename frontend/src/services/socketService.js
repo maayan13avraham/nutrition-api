@@ -30,7 +30,7 @@ function routeSupportMessage(msg) {
 }
 
 export function connect() {
-  if (socket?.connected) return socket;
+  if (socket) return socket; // return existing socket even while still connecting
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   socket = io(SOCKET_URL, {
