@@ -117,6 +117,14 @@ export default function NutritionistDashboard() {
         });
         return next;
       });
+      // Auto-restore threads with new messages from dismissed (mirrors socket behavior)
+      if (Object.keys(dbUnread).length > 0) {
+        setDismissed((prev) => {
+          const next = new Set(prev);
+          Object.keys(dbUnread).forEach((uid) => next.delete(uid));
+          return next;
+        });
+      }
       setConvLoading(false);
     }).catch(() => { setConvError(true); setConvLoading(false); });
   }
