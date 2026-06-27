@@ -9,13 +9,14 @@ async function uploadToCloudinary(recipeId, pollinationsUrl) {
       api_key:    process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
-    const result = await cloudinary.uploader.upload(pollinationsUrl, {
+    await cloudinary.uploader.upload(pollinationsUrl, {
       folder:    'nutrition-recipes',
       public_id: `recipe-${recipeId}`,
       overwrite: true,
       timeout:   120000,
     });
-    await Recipe.update({ imageUrl: result.secure_url }, { where: { recipeId } });
+    const optimizedUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto,w_400,h_280,c_fill/nutrition-recipes/recipe-${recipeId}`;
+    await Recipe.update({ imageUrl: optimizedUrl }, { where: { recipeId } });
     console.log(`[Cloudinary] recipe ${recipeId} uploaded: ${result.secure_url}`);
   } catch (e) {
     console.error(`[Cloudinary] upload failed for recipe ${recipeId}:`, e.message);
