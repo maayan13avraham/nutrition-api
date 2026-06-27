@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { createRecipe } from '../services/recipesService';
-import { connect, sendNutritionistReply, registerDashboardHandler, unregisterDashboardHandler, threadCache, unreadCache, loadedThreadsCache } from '../services/socketService';
+import { connect, sendNutritionistReply, registerDashboardHandler, unregisterDashboardHandler, threadCache, unreadCache, loadedThreadsCache, dismissedCache } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import './NutritionistDashboard.css';
@@ -31,6 +31,7 @@ export default function NutritionistDashboard() {
   const [unread, setUnreadState] = useState(() => unreadCache);
   const [replyInput, setReplyInput] = useState('');
   const [loadedThreads, setLoadedThreadsState] = useState(() => loadedThreadsCache);
+  const [dismissed, setDismissedState] = useState(() => dismissedCache);
 
   function setThreads(updater) {
     setThreadsState((prev) => {
@@ -52,6 +53,18 @@ export default function NutritionistDashboard() {
       loadedThreadsCache = next;
       return next;
     });
+  }
+  function setDismissed(updater) {
+    setDismissedState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      dismissedCache = next;
+      return next;
+    });
+  }
+
+  function dismissThread(userId) {
+    setDismissed((prev) => new Set([...prev, String(userId)]));
+    if (String(selectedUserId) === String(userId)) setSelectedUserId(null);
   }
   const chatBottomRef = useRef(null);
   const selectedUserIdRef = useRef(null);
@@ -87,6 +100,7 @@ export default function NutritionistDashboard() {
   useEffect(() => {
     connect();
     registerDashboardHandler(({ userId, username, content, timestamp }) => {
+      setDismissed((prev) => { const next = new Set(prev); next.delete(String(userId)); return next; });
       setThreads((prev) => {
         const thread = prev[userId] || { username, messages: [] };
         return {
@@ -371,10 +385,12 @@ export default function NutritionistDashboard() {
             {/* Sidebar: user list */}
             <aside className="support-sidebar">
               <div className="support-sidebar-header">משתמשים</div>
-              {Object.keys(threads).length === 0 ? (
+              {Object.keys(threads).filter(uid => !dismissed.has(uid)).length === 0 ? (
                 <p className="support-sidebar-empty">ממתין להודעות...</p>
               ) : (
-                Object.entries(threads).map(([uid, thread]) => (
+                Object.entries(threads)
+                  .filter(([uid]) => !dismissed.has(uid))
+                  .map(([uid, thread]) => (
                   <div
                     key={uid}
                     className={`support-user-item${selectedUserId === uid ? ' active' : ''}`}
@@ -384,6 +400,11 @@ export default function NutritionistDashboard() {
                     {unread[uid] > 0 && (
                       <span className="support-unread-badge">{unread[uid]}</span>
                     )}
+                    <button
+                      className="support-dismiss-btn"
+                      onClick={(e) => { e.stopPropagation(); dismissThread(uid); }}
+                      title="הסתר שיחה"
+                    >✕</button>
                   </div>
                 ))
               )}

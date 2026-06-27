@@ -234,6 +234,17 @@
   background: #c8e6c9;
   font-weight: 600;
 }
+.support-dismiss-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  margin-right: -4px;
+  flex-shrink: 0;
+}
+.support-dismiss-btn:hover { color: #e53935; }
 
 .support-user-name {
   font-size: 0.88rem;

@@ -14,6 +14,7 @@ let badgeHandler = null;
 export let threadCache = {};
 export let unreadCache = {};
 export let loadedThreadsCache = new Set();
+export let dismissedCache = new Set();
 
 export function registerDashboardHandler(fn) {
   dashboardHandler = fn;
