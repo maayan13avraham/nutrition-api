@@ -150,6 +150,17 @@ export default function Dashboard() {
 
   // Derive compatible recipes for the swap table; meals come from backend-generated menu
   const compatibleRecipes = profile ? applyPreferences(recipes, profile) : [];
+
+  // Map recipeId → fresh imageUrl so saved menus get the current Cloudinary URL
+  const freshImageMap = useMemo(() => {
+    const map = {};
+    recipes.forEach(r => { map[r.recipeId] = r.imageUrl; });
+    return map;
+  }, [recipes]);
+
+  const withFreshImage = (recipe) =>
+    recipe ? { ...recipe, imageUrl: freshImageMap[recipe.recipeId] ?? recipe.imageUrl } : null;
+
   const breakfast = generatedMenu?.breakfast || null;
   const lunch     = generatedMenu?.lunch     || null;
   const dinner    = generatedMenu?.dinner    || null;
@@ -351,13 +362,13 @@ export default function Dashboard() {
               {!loading && !fetchError && (
                 <div className="cards-row">
                   {displayedBreakfast
-                    ? <Card {...displayedBreakfast} onClick={() => setSelectedRecipe(displayedBreakfast)} />
+                    ? <Card {...withFreshImage(displayedBreakfast)} onClick={() => setSelectedRecipe(displayedBreakfast)} />
                     : <NoMealCard label={t.table.mealTypes.breakfast} msg={t.dashboard.noRecipeForMeal} />}
                   {displayedLunch
-                    ? <Card {...displayedLunch} onClick={() => setSelectedRecipe(displayedLunch)} />
+                    ? <Card {...withFreshImage(displayedLunch)} onClick={() => setSelectedRecipe(displayedLunch)} />
                     : <NoMealCard label={t.table.mealTypes.lunch} msg={t.dashboard.noRecipeForMeal} />}
                   {displayedDinner
-                    ? <Card {...displayedDinner} onClick={() => setSelectedRecipe(displayedDinner)} />
+                    ? <Card {...withFreshImage(displayedDinner)} onClick={() => setSelectedRecipe(displayedDinner)} />
                     : <NoMealCard label={t.table.mealTypes.dinner} msg={t.dashboard.noRecipeForMeal} />}
                 </div>
               )}
