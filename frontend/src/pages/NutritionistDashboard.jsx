@@ -83,6 +83,8 @@ export default function NutritionistDashboard() {
   function loadConversations() {
     setConvLoading(true);
     setConvError(false);
+    const lastLogout = localStorage.getItem('nutritionist_last_logout');
+    const fallbackTime = lastLogout ? new Date(lastLogout).getTime() : Date.now();
     api.get('/api/chat/conversations').then(({ data }) => {
       if (!data.success) { setConvError(true); setConvLoading(false); return; }
       const grouped = {};
@@ -99,10 +101,9 @@ export default function NutritionistDashboard() {
         });
         loaded.add(uid);
         if (m.senderRole === 'user') {
-          // Count only messages sent after the last time avi opened this thread
           const lastSeen = localStorage.getItem('nutritionist_thread_seen_' + uid);
-          const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
-          if (new Date(m.createdAt).getTime() > lastSeenTime) {
+          const threshold = lastSeen ? new Date(lastSeen).getTime() : fallbackTime;
+          if (new Date(m.createdAt).getTime() > threshold) {
             dbUnread[uid] = (dbUnread[uid] || 0) + 1;
           }
         }
