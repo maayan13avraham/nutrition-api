@@ -1,14 +1,16 @@
 .settings-main {
   flex: 1;
-  padding: 32px;
+  padding: 36px 32px;
   direction: rtl;
-  max-width: 480px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 .settings-main h2 {
-  color: #2e7d32;
-  margin-bottom: 24px;
+  color: #3B2F2F;
+  margin-bottom: 26px;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .settings-form .field-group {
@@ -17,19 +19,31 @@
 
 .settings-form label {
   display: block;
-  font-size: 0.9rem;
-  color: #444;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #6B5050;
   margin-bottom: 6px;
 }
 
 .settings-form input[type="text"],
 .settings-form select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 11px 14px;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 10px;
+  font-size: 0.97rem;
   box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  background: #FDFAF8;
+}
+
+.settings-form input[type="text"]:focus,
+.settings-form select:focus {
+  border-color: #C07B6C;
+  box-shadow: 0 0 0 3px rgba(192, 123, 108, 0.12);
+  background: white;
 }
 
 .checkbox-group label {
@@ -37,31 +51,37 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  color: #6B5050;
 }
 
 .checkbox-group input[type="checkbox"] {
   width: 16px;
   height: 16px;
+  accent-color: #C07B6C;
 }
 
 .success-msg {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #EAF0E5;
+  color: #6A8A5A;
+  border: 1px solid #C8D8BE;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: 10px;
   margin-bottom: 14px;
+  font-size: 0.9rem;
 }
 
 .error-banner {
-  background: #ffebee;
-  color: #c62828;
+  background: #FBF0EE;
+  color: #A85550;
+  border: 1px solid #EDD9D3;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: 10px;
   margin-bottom: 14px;
+  font-size: 0.9rem;
 }
 
 .error-msg {
-  color: #e53935;
+  color: #C0726A;
   font-size: 0.8rem;
   display: block;
   margin-top: 4px;
@@ -69,16 +89,19 @@
 
 .save-btn {
   padding: 11px 28px;
-  background: #2e7d32;
+  background: #C07B6C;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
 }
 
 .save-btn:hover:not(:disabled) {
-  background: #1b5e20;
+  background: #A8665A;
 }
 
 .save-btn:disabled {
@@ -87,21 +110,22 @@
 }
 
 .loading-text {
-  color: #777;
+  color: #9A7F7F;
 }
 
 .settings-divider {
   border: none;
-  border-top: 2px solid #e0e0e0;
+  border-top: 1.5px solid #EDD9D3;
   margin: 28px 0;
 }
 
 .settings-section-title {
-  color: #2e7d32;
-  font-size: 1.1rem;
+  color: #C07B6C;
+  font-size: 1.05rem;
+  font-weight: 600;
   margin-bottom: 18px;
 }
 
 .settings-form input.input-error {
-  border-color: #e53935;
+  border-color: #C0726A;
 }

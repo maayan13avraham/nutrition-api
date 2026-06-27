@@ -1,6 +1,6 @@
 .dashboard-main {
   flex: 1;
-  padding: 32px;
+  padding: 36px 32px;
   direction: rtl;
   max-width: 1100px;
   margin: 0 auto;
@@ -11,21 +11,25 @@
 /* Questionnaire */
 .questionnaire {
   background: white;
-  border-radius: 12px;
-  padding: 36px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  max-width: 600px;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 24px rgba(180, 130, 120, 0.10);
+  max-width: 620px;
   margin: 0 auto;
+  border: 1px solid #EDD9D3;
 }
 
 .questionnaire h2 {
-  color: #2e7d32;
-  margin-bottom: 8px;
+  color: #C07B6C;
+  margin-bottom: 6px;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .q-subtitle {
-  color: #777;
-  margin-bottom: 28px;
+  color: #9A7F7F;
+  margin-bottom: 30px;
+  font-size: 0.92rem;
 }
 
 .q-form .q-row {
@@ -40,23 +44,35 @@
 
 .q-form label {
   display: block;
-  font-size: 0.9rem;
-  color: #444;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #6B5050;
   margin-bottom: 6px;
 }
 
 .q-form input,
 .q-form select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 11px 14px;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 10px;
+  font-size: 0.97rem;
   box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  background: #FDFAF8;
+}
+
+.q-form input:focus,
+.q-form select:focus {
+  border-color: #C07B6C;
+  box-shadow: 0 0 0 3px rgba(192, 123, 108, 0.12);
+  background: white;
 }
 
 .error-msg {
-  color: #e53935;
+  color: #C0726A;
   font-size: 0.78rem;
   display: block;
   margin-top: 4px;
@@ -64,18 +80,23 @@
 
 .submit-btn {
   width: 100%;
-  padding: 13px;
-  background: #2e7d32;
+  padding: 14px;
+  background: #C07B6C;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 10px;
+  transition: background 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .submit-btn:hover {
-  background: #1b5e20;
+  background: #A8665A;
+  box-shadow: 0 4px 14px rgba(192, 123, 108, 0.28);
 }
 
 /* Menu section */
@@ -83,17 +104,20 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .menu-header h2 {
-  color: #2e7d32;
+  color: #3B2F2F;
   margin: 0 0 4px;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .calories-info {
-  color: #555;
+  color: #9A7F7F;
   margin: 0;
+  font-size: 0.9rem;
 }
 
 .menu-actions {
@@ -104,56 +128,62 @@
 }
 
 .save-menu-btn {
-  background: #2e7d32;
+  background: #C07B6C;
   color: #fff;
   border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
+  padding: 8px 20px;
+  border-radius: 20px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   white-space: nowrap;
   transition: background 0.2s;
+  font-family: inherit;
 }
 
 .save-menu-btn:hover {
-  background: #1b5e20;
+  background: #A8665A;
 }
 
 .recalc-btn {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-  padding: 8px 16px;
-  border-radius: 6px;
+  background: white;
+  color: #9A7F7F;
+  border: 1.5px solid #EDD9D3;
+  padding: 8px 18px;
+  border-radius: 20px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+  font-family: inherit;
 }
 
 .recalc-btn:hover {
-  background: #c8e6c9;
+  border-color: #C07B6C;
+  color: #C07B6C;
 }
 
 .cards-row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 40px;
+  margin-bottom: 44px;
 }
 
 /* Questionnaire sections */
 .q-section-title {
-  font-size: 0.95rem;
+  font-size: 0.93rem;
   font-weight: 600;
-  color: #2e7d32;
-  margin: 22px 0 8px;
+  color: #C07B6C;
+  margin: 24px 0 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #e8f5e9;
+  border-bottom: 1px solid #EDD9D3;
 }
 
 .q-section-subtitle {
   font-size: 0.82rem;
-  color: #888;
+  color: #9A7F7F;
   margin: 0 0 10px;
 }
 
@@ -169,15 +199,16 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border: 1.5px solid #ccc;
+  padding: 7px 16px;
+  border: 1.5px solid #EDD9D3;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   background: white;
-  color: #555;
+  color: #6B5050;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
   user-select: none;
+  font-family: inherit;
 }
 
 .allergen-chip input[type="checkbox"] {
@@ -185,9 +216,9 @@
 }
 
 .allergen-chip.selected {
-  border-color: #e53935;
-  background: #ffebee;
-  color: #c62828;
+  border-color: #C07B6C;
+  background: #F2E0DB;
+  color: #8B4A40;
   font-weight: 600;
 }
 
@@ -197,26 +228,27 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-size: 0.95rem;
-  color: #333;
+  font-size: 0.93rem;
+  color: #6B5050;
   margin-bottom: 4px;
-  padding: 10px 14px;
-  border: 1.5px solid #ccc;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 10px;
   width: fit-content;
   transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
 }
 
 .pref-toggle input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #2e7d32;
+  accent-color: #C07B6C;
 }
 
 .pref-toggle:has(input:checked) {
-  border-color: #2e7d32;
-  background: #e8f5e9;
-  color: #1b5e20;
+  border-color: #C07B6C;
+  background: #F2E0DB;
+  color: #8B4A40;
   font-weight: 600;
 }
 
@@ -229,80 +261,85 @@
 }
 
 .chip {
-  padding: 3px 10px;
+  padding: 3px 12px;
   border-radius: 20px;
   font-size: 0.78rem;
+  font-weight: 500;
 }
 
 .chip-green {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #EAF0E5;
+  color: #6A8A5A;
 }
 
 .chip-orange {
-  background: #fff3e0;
-  color: #e65100;
+  background: #FBF0EE;
+  color: #A8665A;
 }
 
 /* No meal placeholder card */
 .no-meal-card {
-  width: 280px;
-  border: 2px dashed #ddd;
-  border-radius: 10px;
-  padding: 24px 16px;
+  width: 290px;
+  border: 2px dashed #EDD9D3;
+  border-radius: 18px;
+  padding: 28px 18px;
   text-align: center;
-  color: #aaa;
+  color: #C0A8A8;
   font-size: 0.88rem;
 }
 
 .no-meal-label {
   font-weight: 600;
   margin-bottom: 8px;
-  color: #bbb;
+  color: #C0A8A8;
 }
 
 /* Swap feature */
 .swap-row-btn {
-  padding: 4px 10px;
+  padding: 5px 12px;
   font-size: 0.78rem;
-  border: 1px solid #a5d6a7;
-  border-radius: 12px;
-  background: #e8f5e9;
-  color: #2e7d32;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 20px;
+  background: white;
+  color: #9A7F7F;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
+  font-family: inherit;
 }
 
 .swap-row-btn:hover {
-  background: #c8e6c9;
+  border-color: #C07B6C;
+  color: #C07B6C;
 }
 
 .current-meal-chip {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 4px 12px;
   font-size: 0.78rem;
-  border-radius: 12px;
-  background: #2e7d32;
+  border-radius: 20px;
+  background: #C07B6C;
   color: white;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .row-highlighted {
-  background: #f1f8f1;
+  background: #FBF7F4;
 }
 
 /* Table section */
 .table-section h3 {
-  color: #333;
+  color: #3B2F2F;
   margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .loading-text {
-  color: #777;
+  color: #9A7F7F;
 }
 
 .error-text {
-  color: #c62828;
+  color: #C0726A;
 }

@@ -2,13 +2,6 @@ import React, { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import './RecipeModal.css';
 
-// Header color per meal type, matching the Card component color scheme
-const MEAL_COLORS = {
-  breakfast: '#f9a825',
-  lunch: '#388e3c',
-  dinner: '#1565c0',
-};
-
 // Full-screen overlay modal showing complete recipe details including ingredients and instructions
 export default function RecipeModal({ recipe, onClose }) {
   const { t } = useLanguage();
@@ -23,7 +16,6 @@ export default function RecipeModal({ recipe, onClose }) {
   // Render nothing when no recipe is selected
   if (!recipe) return null;
 
-  const color = MEAL_COLORS[recipe.mealType] || '#555';
   const mealLabel = t.card.mealTypes[recipe.mealType] || recipe.mealType;
 
   return (
@@ -31,7 +23,7 @@ export default function RecipeModal({ recipe, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       {/* Stop click propagation so clicks inside the box do not close the modal */}
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header" style={{ background: color }}>
+        <div className={`modal-header header-${recipe.mealType}`}>
           <div>
             <span className="modal-meal-type">{mealLabel}</span>
             <h2 className="modal-title">{recipe.name}</h2>

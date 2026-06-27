@@ -8,25 +8,26 @@
 }
 
 .rm-main h1 {
-  color: #2e7d32;
+  color: #3B2F2F;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .rm-loading {
-  color: #666;
+  color: #9A7F7F;
   font-style: italic;
 }
 
 .rm-error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
-  border-radius: 6px;
+  background: #FBF0EE;
+  color: #A85550;
+  border: 1px solid #EDD9D3;
+  border-radius: 10px;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
 }
 
-/* Action buttons in each table row */
 .rm-action-cell {
   display: flex;
   gap: 6px;
@@ -34,40 +35,43 @@
 }
 
 .rm-edit-btn {
-  background: #1565c0;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 12px;
+  background: #F2E0DB;
+  color: #C07B6C;
+  border: 1px solid #EDD9D3;
+  border-radius: 6px;
+  padding: 5px 12px;
   cursor: pointer;
   font-size: 0.85rem;
+  font-weight: 500;
   transition: background 0.15s;
+  font-family: inherit;
 }
 
 .rm-edit-btn:hover {
-  background: #0d47a1;
+  background: #EDD9D3;
 }
 
 .rm-delete-btn {
-  background: #c62828;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 12px;
+  background: #FBF0EE;
+  color: #A85550;
+  border: 1px solid #EDD9D3;
+  border-radius: 6px;
+  padding: 5px 12px;
   cursor: pointer;
   font-size: 0.85rem;
   transition: background 0.15s;
+  font-family: inherit;
 }
 
 .rm-delete-btn:hover {
-  background: #b71c1c;
+  background: #F2D5D2;
+  color: #8B3A36;
 }
 
-/* Edit modal overlay */
 .rm-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(59, 47, 47, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,43 +80,44 @@
 
 .rm-modal {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 18px;
   padding: 2rem;
   width: 540px;
   max-width: 95vw;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 40px rgba(180, 130, 120, 0.2);
+  border: 1px solid #EDD9D3;
 }
 
 .rm-modal-title {
-  color: #2e7d32;
+  color: #C07B6C;
   margin-top: 0;
   margin-bottom: 1.25rem;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .rm-modal-error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
-  border-radius: 6px;
+  background: #FBF0EE;
+  color: #A85550;
+  border: 1px solid #EDD9D3;
+  border-radius: 8px;
   padding: 0.6rem 0.9rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
 .rm-modal-success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-  border-radius: 6px;
+  background: #EAF0E5;
+  color: #6A8A5A;
+  border: 1px solid #C8D8BE;
+  border-radius: 8px;
   padding: 0.6rem 0.9rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
-/* Form fields inside the modal */
 .rm-field-group {
   display: flex;
   flex-direction: column;
@@ -121,43 +126,44 @@
 
 .rm-field-group label {
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #333;
+  font-weight: 500;
+  color: #6B5050;
   margin-bottom: 4px;
 }
 
 .rm-field-group input,
 .rm-field-group select,
 .rm-field-group textarea {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px 10px;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 8px;
+  padding: 9px 12px;
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   font-family: inherit;
+  background: #FDFAF8;
 }
 
 .rm-field-group input:focus,
 .rm-field-group select:focus,
 .rm-field-group textarea:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 3px #c8e6c9;
+  border-color: #C07B6C;
+  box-shadow: 0 0 0 3px rgba(192, 123, 108, 0.12);
+  background: white;
 }
 
 .rm-field-error {
-  color: #c62828;
+  color: #C0726A;
   font-size: 0.8rem;
   margin-top: 3px;
 }
 
 .rm-field-hint {
-  color: #777;
+  color: #9A7F7F;
   font-size: 0.78rem;
   margin-top: 3px;
 }
 
-/* Macros row: calories / protein / carbs / fat side-by-side */
 .rm-number-row {
   display: flex;
   gap: 10px;
@@ -169,7 +175,6 @@
   min-width: 90px;
 }
 
-/* Modal action buttons */
 .rm-modal-actions {
   display: flex;
   gap: 10px;
@@ -177,18 +182,20 @@
 }
 
 .rm-save-btn {
-  background: #2e7d32;
+  background: #C07B6C;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 10px 22px;
+  border-radius: 10px;
+  padding: 10px 24px;
   font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
+  font-family: inherit;
 }
 
 .rm-save-btn:hover:not(:disabled) {
-  background: #1b5e20;
+  background: #A8665A;
 }
 
 .rm-save-btn:disabled {
@@ -198,15 +205,17 @@
 
 .rm-cancel-btn {
   background: #fff;
-  color: #555;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  color: #9A7F7F;
+  border: 1.5px solid #EDD9D3;
+  border-radius: 10px;
   padding: 10px 22px;
   font-size: 0.95rem;
   cursor: pointer;
   transition: border-color 0.15s;
+  font-family: inherit;
 }
 
 .rm-cancel-btn:hover {
-  border-color: #999;
+  border-color: #C07B6C;
+  color: #C07B6C;
 }

@@ -1,7 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(59, 47, 47, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,19 +11,19 @@
 
 .modal-box {
   background: white;
-  border-radius: 14px;
+  border-radius: 20px;
   width: 100%;
   max-width: 560px;
   max-height: 88vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  box-shadow: 0 12px 48px rgba(180, 130, 120, 0.25);
   direction: inherit;
 }
 
 .modal-header {
-  padding: 20px 24px;
+  padding: 22px 26px;
   color: white;
   display: flex;
   justify-content: space-between;
@@ -31,65 +31,84 @@
   flex-shrink: 0;
 }
 
+.modal-header.header-breakfast {
+  background: linear-gradient(135deg, #F9D8C4, #F0A080);
+}
+
+.modal-header.header-lunch {
+  background: linear-gradient(135deg, #B8D4C8, #7EB5A6);
+}
+
+.modal-header.header-dinner {
+  background: linear-gradient(135deg, #D4B8D4, #A07BB0);
+}
+
 .modal-meal-type {
-  font-size: 0.8rem;
-  opacity: 0.85;
+  font-size: 0.78rem;
+  opacity: 0.9;
   display: block;
   margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 500;
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .modal-close {
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
   cursor: pointer;
   font-size: 0.85rem;
   white-space: nowrap;
   margin-top: 4px;
+  font-family: inherit;
+  transition: background 0.15s;
 }
 
 .modal-close:hover {
-  background: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .modal-body {
-  padding: 20px 24px;
+  padding: 22px 26px;
   overflow-y: auto;
   flex: 1;
 }
 
 .modal-description {
-  color: #666;
-  margin-bottom: 16px;
+  color: #9A7F7F;
+  margin-bottom: 18px;
   font-size: 0.95rem;
+  line-height: 1.55;
 }
 
 .modal-stats {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 14px;
+  background: #FBF7F4;
+  border-radius: 14px;
+  padding: 16px 12px;
   text-align: center;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   font-size: 0.82rem;
-  color: #555;
+  color: #9A7F7F;
+  border: 1px solid #EDD9D3;
 }
 
 .modal-stats strong {
   display: block;
   font-size: 1.05rem;
-  color: #222;
+  color: #3B2F2F;
+  font-weight: 600;
   margin-bottom: 2px;
 }
 
@@ -97,35 +116,37 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
-}
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-}
-
-.badge.veg {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.badge.allergen {
-  background: #fff3e0;
-  color: #e65100;
-}
-
-.modal-section {
   margin-bottom: 20px;
 }
 
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge.veg {
+  background: #EAF0E5;
+  color: #6A8A5A;
+}
+
+.badge.allergen {
+  background: #FBF0EE;
+  color: #A85550;
+}
+
+.modal-section {
+  margin-bottom: 22px;
+}
+
 .modal-section h3 {
-  font-size: 1rem;
-  color: #333;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #3B2F2F;
   margin-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 6px;
+  border-bottom: 1.5px solid #EDD9D3;
+  padding-bottom: 7px;
 }
 
 .ingredients-list {
@@ -137,17 +158,17 @@
 .ingredients-list li {
   display: flex;
   justify-content: space-between;
-  padding: 7px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 8px 0;
+  border-bottom: 1px solid #FBF7F4;
   font-size: 0.92rem;
 }
 
 .ing-name {
-  color: #333;
+  color: #3B2F2F;
 }
 
 .ing-amount {
-  color: #777;
+  color: #9A7F7F;
   font-weight: 500;
 }
 
@@ -157,11 +178,11 @@
 }
 
 .instructions-list li {
-  padding: 6px 0;
+  padding: 7px 0;
   font-size: 0.92rem;
-  color: #444;
-  line-height: 1.5;
-  border-bottom: 1px solid #f5f5f5;
+  color: #6B5050;
+  line-height: 1.55;
+  border-bottom: 1px solid #FBF7F4;
 }
 
 .instructions-list li:last-child {

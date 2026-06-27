@@ -1,4 +1,3 @@
-/* Floating action button */
 .support-chat-fab {
   position: fixed;
   bottom: 28px;
@@ -7,12 +6,12 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  background: linear-gradient(135deg, #C07B6C, #9B5C50);
   color: white;
   font-size: 1.5rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.45);
+  box-shadow: 0 4px 18px rgba(192, 123, 108, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,17 +20,16 @@
 
 .support-chat-fab:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.55);
+  box-shadow: 0 6px 22px rgba(192, 123, 108, 0.55);
 }
 
-/* Unread badge */
 .support-chat-badge {
   position: absolute;
   top: 4px;
   right: 4px;
   min-width: 18px;
   height: 18px;
-  background: #e53935;
+  background: #C0726A;
   color: white;
   border-radius: 9px;
   font-size: 0.7rem;
@@ -43,7 +41,6 @@
   line-height: 1;
 }
 
-/* Slide-up chat panel */
 .support-chat-panel {
   position: fixed;
   bottom: 96px;
@@ -54,10 +51,11 @@
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 8px 36px rgba(180, 130, 120, 0.2);
   overflow: hidden;
   animation: slideUp 0.2s ease-out;
+  border: 1px solid #EDD9D3;
 }
 
 @keyframes slideUp {
@@ -65,7 +63,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Header bar — extends .ai-chat-header-bar */
 .support-chat-header {
   justify-content: space-between;
 }
@@ -92,43 +89,38 @@
   opacity: 1;
 }
 
-/* Message body — extends .ai-chat-body */
 .support-chat-body {
   flex: 1;
   min-height: 200px;
   max-height: 320px;
 }
 
-/* System messages (join/leave notices) */
 .support-chat-system {
   align-self: center;
   font-size: 0.78rem;
-  color: #888;
-  background: #f0f0f0;
+  color: #9A7F7F;
+  background: #F5EDE8;
   border-radius: 20px;
   padding: 4px 12px;
   text-align: center;
 }
 
-/* Empty state */
 .support-chat-empty {
-  color: #aaa;
+  color: #C0A8A8;
   font-size: 0.88rem;
   text-align: center;
   margin: auto;
   padding: 16px;
 }
 
-/* Sender name above assistant bubble */
 .support-sender {
   display: block;
   font-size: 0.73rem;
   font-weight: 600;
-  color: #2e7d32;
+  color: #C07B6C;
   margin-bottom: 3px;
 }
 
-/* Typing indicator row */
 .support-typing {
   display: flex;
   align-items: center;
@@ -138,11 +130,10 @@
 
 .support-typing-name {
   font-size: 0.78rem;
-  color: #888;
+  color: #9A7F7F;
   font-style: italic;
 }
 
-/* Nutritionist availability badge */
 .nutritionist-status-badge {
   display: flex;
   align-items: center;
@@ -150,17 +141,17 @@
   padding: 6px 14px;
   font-size: 0.76rem;
   font-weight: 500;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #F5EDE8;
 }
 
 .nutritionist-status-badge.status-online {
-  background: #f1f8e9;
-  color: #2e7d32;
+  background: #FBF7F4;
+  color: #9BB08A;
 }
 
 .nutritionist-status-badge.status-offline {
-  background: #fafafa;
-  color: #9e9e9e;
+  background: #FDFAF8;
+  color: #9A7F7F;
 }
 
 .status-dot {
@@ -171,12 +162,12 @@
 }
 
 .status-online .status-dot {
-  background: #43a047;
-  box-shadow: 0 0 0 2px #c8e6c9;
+  background: #9BB08A;
+  box-shadow: 0 0 0 2px #EAF0E5;
 }
 
 .status-offline .status-dot {
-  background: #bdbdbd;
+  background: #C0A8A8;
 }
 
 @media (max-width: 480px) {

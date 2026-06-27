@@ -3,10 +3,11 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #1b5e20;
-  color: #c8e6c9;
-  padding: 14px;
-  font-size: 0.9rem;
+  background: #3B2F2F;
+  color: #EDD9D3;
+  padding: 16px;
+  font-size: 0.88rem;
   direction: rtl;
   margin-top: auto;
+  letter-spacing: 0.01em;
 }
