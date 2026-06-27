@@ -24,4 +24,25 @@ async function getChatHistory(req, res) {
   }
 }
 
-module.exports = { getChatHistory };
+async function getConversations(req, res) {
+  const { userRole } = req.user;
+  if (userRole !== 'nutritionist' && userRole !== 'admin')
+    return res.status(403).json({ success: false, data: null,
+      error: { code: 'FORBIDDEN', message: 'Access denied' } });
+
+  try {
+    const rows = await SupportMessage.findAll({
+      order: [['createdAt', 'ASC']],
+    });
+    return res.status(200).json({
+      success: true,
+      data: rows.map((r) => r.get({ plain: true })),
+      error: null,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, data: null,
+      error: { code: 'INTERNAL_ERROR', message: err.message } });
+  }
+}
+
+module.exports = { getChatHistory, getConversations };

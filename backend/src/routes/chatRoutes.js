@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const ctrl = require('../controllers/chatController');
 
+router.get('/conversations', authenticateToken, ctrl.getConversations);
 router.get('/history/:userId', authenticateToken, ctrl.getChatHistory);
 
 module.exports = router;

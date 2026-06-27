@@ -61,6 +61,28 @@ export default function NutritionistDashboard() {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [threads, selectedUserId]);
 
+  // Load all past conversations from DB on mount
+  useEffect(() => {
+    api.get('/api/chat/conversations').then(({ data }) => {
+      if (!data.success) return;
+      const grouped = {};
+      const loaded = new Set();
+      data.data.forEach((m) => {
+        const uid = m.userId;
+        if (!grouped[uid]) grouped[uid] = { username: m.senderRole === 'user' ? m.senderName : `User ${uid}`, messages: [] };
+        grouped[uid].messages.push({
+          self:      m.senderRole === 'nutritionist',
+          from:      m.senderRole === 'user' ? (m.senderName || undefined) : undefined,
+          content:   m.content,
+          timestamp: m.createdAt,
+        });
+        loaded.add(uid);
+      });
+      setThreads(grouped);
+      setLoadedThreads(loaded);
+    }).catch(() => {});
+  }, []);
+
   // Connect to socket and register dashboard handler (also flushes buffered messages)
   useEffect(() => {
     connect();
