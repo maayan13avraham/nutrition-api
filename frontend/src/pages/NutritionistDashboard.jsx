@@ -70,7 +70,10 @@ export default function NutritionistDashboard() {
   function dismissThread(userId) {
     setDismissed((prev) => new Set([...prev, String(userId)]));
     localStorage.setItem('nutritionist_dismissed_at_' + userId, new Date().toISOString());
-    if (String(selectedUserId) === String(userId)) setSelectedUserId(null);
+    if (String(selectedUserId) === String(userId)) {
+      setSelectedUserId(null);
+      selectedUserIdRef.current = null;
+    }
   }
   const chatBottomRef = useRef(null);
   const selectedUserIdRef = useRef(null);
