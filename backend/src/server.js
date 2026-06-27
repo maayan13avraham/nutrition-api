@@ -69,7 +69,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log('Database connection established.');
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log('Models synchronized.');
   } catch (err) {
     console.error('Database unavailable — starting without DB:', err.message);
