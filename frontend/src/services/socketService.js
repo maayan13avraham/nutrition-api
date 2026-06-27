@@ -5,13 +5,29 @@ export const SUPPORT_ROOM = 'nutrition_support';
 
 let socket = null;
 
-// Buffer for support messages that arrive while NutritionistDashboard is unmounted
-let dashboardMounted = false;
+// Single routing layer — ONE listener for receive_support_message prevents duplicates
 const pendingMessages = [];
+let dashboardHandler = null;
+let badgeHandler = null;
 
-export function setDashboardMounted(val) { dashboardMounted = val; }
-export function bufferIfNeeded(msg) { if (!dashboardMounted) pendingMessages.push(msg); }
-export function flushPendingMessages() { const msgs = [...pendingMessages]; pendingMessages.length = 0; return msgs; }
+export function registerDashboardHandler(fn) {
+  dashboardHandler = fn;
+  const msgs = [...pendingMessages];
+  pendingMessages.length = 0;
+  msgs.forEach(fn);
+}
+export function unregisterDashboardHandler() { dashboardHandler = null; }
+export function registerBadgeHandler(fn) { badgeHandler = fn; }
+export function unregisterBadgeHandler() { badgeHandler = null; }
+
+function routeSupportMessage(msg) {
+  if (dashboardHandler) {
+    dashboardHandler(msg);
+  } else {
+    pendingMessages.push(msg);
+  }
+  if (badgeHandler) badgeHandler(msg);
+}
 
 export function connect() {
   if (socket?.connected) return socket;
@@ -23,6 +39,7 @@ export function connect() {
       firstName: user.firstName || user.email || 'Guest',
     },
   });
+  socket.on('receive_support_message', routeSupportMessage);
   return socket;
 }
 

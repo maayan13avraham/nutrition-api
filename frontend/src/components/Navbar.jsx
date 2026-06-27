@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getMe } from '../services/usersService';
 import { logout } from '../services/authService';
-import { connect, disconnect as disconnectSocket, notifyNutritionistOffline, bufferIfNeeded } from '../services/socketService';
+import { connect, disconnect as disconnectSocket, notifyNutritionistOffline, registerBadgeHandler, unregisterBadgeHandler } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import './Navbar.css';
 
@@ -22,19 +22,16 @@ export default function Navbar() {
       .catch(() => {});
   }, []);
 
-  // For nutritionists: listen globally for incoming support messages so badge
-  // appears even when not on the dashboard page
+  // For nutritionists: register badge handler to count messages arriving on any page
   useEffect(() => {
     if (userRole !== 'nutritionist') return;
-    const socket = connect();
-    const handler = (msg) => {
-      bufferIfNeeded(msg);
+    connect();
+    registerBadgeHandler(() => {
       if (location.pathname !== '/nutritionist') {
         setUnreadMessages((prev) => prev + 1);
       }
-    };
-    socket.on('receive_support_message', handler);
-    return () => socket.off('receive_support_message', handler);
+    });
+    return () => unregisterBadgeHandler();
   }, [userRole, location.pathname]);
 
   // Clear badge when nutritionist returns to their dashboard

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { createRecipe } from '../services/recipesService';
-import { connect, sendNutritionistReply, setDashboardMounted, flushPendingMessages } from '../services/socketService';
+import { connect, sendNutritionistReply, registerDashboardHandler, unregisterDashboardHandler } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import './NutritionistDashboard.css';
@@ -39,12 +39,10 @@ export default function NutritionistDashboard() {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [threads, selectedUserId]);
 
-  // Connect to socket and listen for incoming user support messages
+  // Connect to socket and register dashboard handler (also flushes buffered messages)
   useEffect(() => {
-    setDashboardMounted(true);
-    const socket = connect();
-
-    const handleMessage = ({ userId, username, content, timestamp }) => {
+    connect();
+    registerDashboardHandler(({ userId, username, content, timestamp }) => {
       setThreads((prev) => {
         const thread = prev[userId] || { username, messages: [] };
         return {
@@ -55,17 +53,8 @@ export default function NutritionistDashboard() {
       if (selectedUserIdRef.current !== String(userId)) {
         setUnread((prev) => ({ ...prev, [userId]: (prev[userId] || 0) + 1 }));
       }
-    };
-
-    // Flush messages that arrived while dashboard was unmounted
-    flushPendingMessages().forEach(handleMessage);
-
-    socket.on('receive_support_message', handleMessage);
-
-    return () => {
-      socket.off('receive_support_message', handleMessage);
-      setDashboardMounted(false);
-    };
+    });
+    return () => unregisterDashboardHandler();
   }, []);
 
   function selectUser(userId) {
