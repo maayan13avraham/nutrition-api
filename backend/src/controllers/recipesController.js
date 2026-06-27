@@ -2,8 +2,31 @@ const { Recipe, Ingredient } = require('../../models');
 
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 
-function buildImageUrl(name, recipeId) {
-  const prompt = encodeURIComponent(`${name}, food dish, appetizing, food photography, warm lighting, professional`);
+async function buildRecipeImagePrompt(name, ingredients, mealType, isVegetarian) {
+  try {
+    const Groq = require('groq-sdk');
+    const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const ingList = (ingredients || []).map(i => i.name || i).join(', ');
+    const res = await client.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{
+        role: 'user',
+        content: `You are a food photographer. Based on this recipe, write a SHORT English image prompt (max 12 words) describing what the dish looks like on a plate. Recipe name (Hebrew): "${name}". Main ingredients (Hebrew): ${ingList}. Meal type: ${mealType}.${isVegetarian ? ' Vegetarian dish.' : ''} Reply with ONLY the image prompt, no explanation.`,
+      }],
+      max_tokens: 40,
+    });
+    return res.choices[0].message.content.trim();
+  } catch {
+    const fallback = { breakfast: 'breakfast meal plate', lunch: 'healthy lunch dish', dinner: 'dinner entree plate' };
+    return fallback[mealType] || 'food dish plate';
+  }
+}
+
+function buildImageUrl(englishPrompt, isVegetarian, recipeId) {
+  const vegTag = isVegetarian ? 'vegetarian, ' : '';
+  const prompt = encodeURIComponent(
+    `${englishPrompt}, ${vegTag}food photography, appetizing, warm natural lighting, restaurant quality, close-up`
+  );
   return `https://image.pollinations.ai/prompt/${prompt}?width=400&height=280&nologo=true&seed=${recipeId}`;
 }
 
@@ -98,7 +121,8 @@ async function createRecipe(req, res) {
       prepTime: prepTime || 0,
       createDate: now, updateDate: now,
     });
-    await recipe.update({ imageUrl: buildImageUrl(recipe.name, recipe.recipeId) });
+    const imagePrompt = await buildRecipeImagePrompt(recipe.name, ingredients, recipe.mealType, recipe.isVegetarian);
+    await recipe.update({ imageUrl: buildImageUrl(imagePrompt, recipe.isVegetarian, recipe.recipeId) });
     if (Array.isArray(ingredients) && ingredients.length) {
       await Ingredient.bulkCreate(ingredients.map(i => ({ name: i.name, amount: i.amount, recipeId: recipe.recipeId })));
     }
