@@ -24,7 +24,6 @@ export default function Card({ mealType, name, calories, protein, carbs, fat, pr
           <img
             src={imageUrl}
             alt={name}
-            loading="lazy"
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgError(true)}
           />
