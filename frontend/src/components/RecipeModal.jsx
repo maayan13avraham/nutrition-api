@@ -31,6 +31,11 @@ export default function RecipeModal({ recipe, onClose }) {
           <button className="modal-close" onClick={onClose}>{t.modal.close} ✕</button>
         </div>
 
+        {recipe.imageUrl && (
+          <div className="modal-image">
+            <img src={recipe.imageUrl} alt={recipe.name} />
+          </div>
+        )}
         <div className="modal-body">
           <p className="modal-description">{recipe.description}</p>
 

@@ -2,6 +2,11 @@ const { Recipe, Ingredient } = require('../../models');
 
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 
+function buildImageUrl(name, recipeId) {
+  const prompt = encodeURIComponent(`${name}, food dish, appetizing, food photography, warm lighting, professional`);
+  return `https://image.pollinations.ai/prompt/${prompt}?width=400&height=280&nologo=true&seed=${recipeId}`;
+}
+
 function validateBody(body) {
   const { name, mealType, calories, protein, carbs, fat } = body;
   if (!name || typeof name !== 'string' || !name.trim())
@@ -43,6 +48,7 @@ function toResponse(recipe) {
     prepTime: plain.prepTime,
     instructions: plain.instructions || [],
     ingredients: (plain.ingredients || []).map(i => ({ name: i.name, amount: i.amount })),
+    imageUrl: plain.imageUrl || null,
     createDate: plain.createDate,
     updateDate: plain.updateDate,
   };
@@ -92,6 +98,7 @@ async function createRecipe(req, res) {
       prepTime: prepTime || 0,
       createDate: now, updateDate: now,
     });
+    await recipe.update({ imageUrl: buildImageUrl(recipe.name, recipe.recipeId) });
     if (Array.isArray(ingredients) && ingredients.length) {
       await Ingredient.bulkCreate(ingredients.map(i => ({ name: i.name, amount: i.amount, recipeId: recipe.recipeId })));
     }

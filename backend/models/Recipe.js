@@ -59,6 +59,10 @@ const Recipe = sequelize.define('Recipe', {
     allowNull: false,
     defaultValue: 0,
   },
+  imageUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   createDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

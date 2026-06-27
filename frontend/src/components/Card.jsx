@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import './Card.css';
 
-export default function Card({ mealType, name, calories, protein, carbs, fat, prepTime, isVegetarian, onClick }) {
+export default function Card({ mealType, name, calories, protein, carbs, fat, prepTime, isVegetarian, imageUrl, onClick }) {
   const { t } = useLanguage();
   const label = t.card.mealTypes[mealType] || mealType;
 
@@ -12,6 +12,11 @@ export default function Card({ mealType, name, calories, protein, carbs, fat, pr
         <span>{label}</span>
         {isVegetarian && <span className="veg-badge">🌱 {t.card.veg}</span>}
       </div>
+      {imageUrl && (
+        <div className="card-image">
+          <img src={imageUrl} alt={name} loading="lazy" />
+        </div>
+      )}
       <div className="meal-card-body">
         <h3>{name}</h3>
         <div className="meal-card-stats">
