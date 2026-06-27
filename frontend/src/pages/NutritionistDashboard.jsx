@@ -83,8 +83,6 @@ export default function NutritionistDashboard() {
   function loadConversations() {
     setConvLoading(true);
     setConvError(false);
-    const lastLogout = localStorage.getItem('nutritionist_last_logout');
-    const lastLogoutTime = lastLogout ? new Date(lastLogout).getTime() : 0;
     api.get('/api/chat/conversations').then(({ data }) => {
       if (!data.success) { setConvError(true); setConvLoading(false); return; }
       const grouped = {};
@@ -100,9 +98,13 @@ export default function NutritionistDashboard() {
           timestamp: m.createdAt,
         });
         loaded.add(uid);
-        // Only count user messages sent after the last logout as unread
-        if (m.senderRole === 'user' && new Date(m.createdAt).getTime() > lastLogoutTime) {
-          dbUnread[uid] = (dbUnread[uid] || 0) + 1;
+        if (m.senderRole === 'user') {
+          // Count only messages sent after the last time avi opened this thread
+          const lastSeen = localStorage.getItem('nutritionist_thread_seen_' + uid);
+          const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
+          if (new Date(m.createdAt).getTime() > lastSeenTime) {
+            dbUnread[uid] = (dbUnread[uid] || 0) + 1;
+          }
         }
       });
       setThreads(grouped);
@@ -143,6 +145,7 @@ export default function NutritionistDashboard() {
     setSelectedUserId(userId);
     selectedUserIdRef.current = String(userId);
     setUnread((prev) => ({ ...prev, [userId]: 0 }));
+    localStorage.setItem('nutritionist_thread_seen_' + userId, new Date().toISOString());
 
     if (loadedThreads.has(userId)) return;
 
