@@ -1,11 +1,25 @@
 const https = require('https');
 const { Recipe, Ingredient } = require('../../models');
 
-function warmupImage(url) {
+async function uploadToCloudinary(recipeId, pollinationsUrl) {
   try {
-    const req = https.get(url, (res) => res.resume());
-    req.on('error', () => {});
-  } catch {}
+    const { v2: cloudinary } = require('cloudinary');
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    const result = await cloudinary.uploader.upload(pollinationsUrl, {
+      folder:    'nutrition-recipes',
+      public_id: `recipe-${recipeId}`,
+      overwrite: true,
+      timeout:   120000,
+    });
+    await Recipe.update({ imageUrl: result.secure_url }, { where: { recipeId } });
+    console.log(`[Cloudinary] recipe ${recipeId} uploaded: ${result.secure_url}`);
+  } catch (e) {
+    console.error(`[Cloudinary] upload failed for recipe ${recipeId}:`, e.message);
+  }
 }
 
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
@@ -132,7 +146,7 @@ async function createRecipe(req, res) {
     const imagePrompt = await buildRecipeImagePrompt(recipe.name, ingredients, recipe.mealType, recipe.isVegetarian);
     const imageUrl = buildImageUrl(imagePrompt, recipe.isVegetarian, recipe.recipeId);
     await recipe.update({ imageUrl });
-    warmupImage(imageUrl);
+    uploadToCloudinary(recipe.recipeId, imageUrl);
     if (Array.isArray(ingredients) && ingredients.length) {
       await Ingredient.bulkCreate(ingredients.map(i => ({ name: i.name, amount: i.amount, recipeId: recipe.recipeId })));
     }
