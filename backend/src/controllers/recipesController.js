@@ -1,4 +1,12 @@
+const https = require('https');
 const { Recipe, Ingredient } = require('../../models');
+
+function warmupImage(url) {
+  try {
+    const req = https.get(url, (res) => res.resume());
+    req.on('error', () => {});
+  } catch {}
+}
 
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner'];
 
@@ -122,7 +130,9 @@ async function createRecipe(req, res) {
       createDate: now, updateDate: now,
     });
     const imagePrompt = await buildRecipeImagePrompt(recipe.name, ingredients, recipe.mealType, recipe.isVegetarian);
-    await recipe.update({ imageUrl: buildImageUrl(imagePrompt, recipe.isVegetarian, recipe.recipeId) });
+    const imageUrl = buildImageUrl(imagePrompt, recipe.isVegetarian, recipe.recipeId);
+    await recipe.update({ imageUrl });
+    warmupImage(imageUrl);
     if (Array.isArray(ingredients) && ingredients.length) {
       await Ingredient.bulkCreate(ingredients.map(i => ({ name: i.name, amount: i.amount, recipeId: recipe.recipeId })));
     }
