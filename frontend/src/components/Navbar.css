@@ -48,3 +48,19 @@
 .navbar-user button:hover {
   background: rgba(255,255,255,0.35);
 }
+
+.nav-badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
