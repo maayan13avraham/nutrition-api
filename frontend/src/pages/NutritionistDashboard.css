@@ -234,6 +234,18 @@
   background: #c8e6c9;
   font-weight: 600;
 }
+.conv-retry-btn {
+  margin-top: 8px;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.conv-retry-btn:hover { background: #1b5e20; }
+
 .support-dismiss-btn {
   background: none;
   border: none;

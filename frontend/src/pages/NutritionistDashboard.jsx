@@ -32,6 +32,8 @@ export default function NutritionistDashboard() {
     try { return JSON.parse(localStorage.getItem('nutritionist_unread') || '{}'); } catch { return {}; }
   });
   const [replyInput, setReplyInput] = useState('');
+  const [convLoading, setConvLoading] = useState(true);
+  const [convError, setConvError] = useState(false);
   const [loadedThreads, setLoadedThreadsState] = useState(() => loadedThreadsCache);
   const [dismissed, setDismissedState] = useState(() => dismissedCache);
 
@@ -77,10 +79,12 @@ export default function NutritionistDashboard() {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [threads, selectedUserId]);
 
-  // Load all past conversations from DB on mount
-  useEffect(() => {
+  // Load all past conversations from DB — extracted so the retry button can call it too
+  function loadConversations() {
+    setConvLoading(true);
+    setConvError(false);
     api.get('/api/chat/conversations').then(({ data }) => {
-      if (!data.success) return;
+      if (!data.success) { setConvError(true); setConvLoading(false); return; }
       const grouped = {};
       const loaded = new Set();
       data.data.forEach((m) => {
@@ -96,8 +100,11 @@ export default function NutritionistDashboard() {
       });
       setThreads(grouped);
       setLoadedThreads(loaded);
-    }).catch(() => {});
-  }, []);
+      setConvLoading(false);
+    }).catch(() => { setConvError(true); setConvLoading(false); });
+  }
+
+  useEffect(() => { loadConversations(); }, []);
 
   // Connect to socket and register dashboard handler (also flushes buffered messages)
   useEffect(() => {
@@ -388,7 +395,14 @@ export default function NutritionistDashboard() {
             {/* Sidebar: user list */}
             <aside className="support-sidebar">
               <div className="support-sidebar-header">משתמשים</div>
-              {Object.keys(threads).filter(uid => !dismissed.has(uid)).length === 0 ? (
+              {convLoading ? (
+                <p className="support-sidebar-empty">טוען שיחות...</p>
+              ) : convError ? (
+                <div className="support-sidebar-empty">
+                  <p>שגיאה בטעינה</p>
+                  <button className="conv-retry-btn" onClick={loadConversations}>נסה שוב</button>
+                </div>
+              ) : Object.keys(threads).filter(uid => !dismissed.has(uid)).length === 0 ? (
                 <p className="support-sidebar-empty">ממתין להודעות...</p>
               ) : (
                 Object.entries(threads)
