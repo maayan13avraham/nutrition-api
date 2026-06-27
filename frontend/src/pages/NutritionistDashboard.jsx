@@ -83,6 +83,8 @@ export default function NutritionistDashboard() {
   function loadConversations() {
     setConvLoading(true);
     setConvError(false);
+    const lastLogout = localStorage.getItem('nutritionist_last_logout');
+    const lastLogoutTime = lastLogout ? new Date(lastLogout).getTime() : 0;
     api.get('/api/chat/conversations').then(({ data }) => {
       if (!data.success) { setConvError(true); setConvLoading(false); return; }
       const grouped = {};
@@ -98,11 +100,13 @@ export default function NutritionistDashboard() {
           timestamp: m.createdAt,
         });
         loaded.add(uid);
-        if (m.senderRole === 'user') dbUnread[uid] = (dbUnread[uid] || 0) + 1;
+        // Only count user messages sent after the last logout as unread
+        if (m.senderRole === 'user' && new Date(m.createdAt).getTime() > lastLogoutTime) {
+          dbUnread[uid] = (dbUnread[uid] || 0) + 1;
+        }
       });
       setThreads(grouped);
       setLoadedThreads(loaded);
-      // Mark user messages from DB as unread for threads not yet tracked this session
       setUnread((prev) => {
         const next = { ...prev };
         Object.keys(dbUnread).forEach((uid) => {

@@ -54,7 +54,10 @@ export default function Navbar() {
   // Call the logout endpoint, clear the local session, and redirect to login
   async function handleLogout() {
     await logout();
-    if (userRole === 'nutritionist') notifyNutritionistOffline();
+    if (userRole === 'nutritionist') {
+      notifyNutritionistOffline();
+      localStorage.setItem('nutritionist_last_logout', new Date().toISOString());
+    }
     disconnectSocket();
     localStorage.removeItem('user');
     localStorage.removeItem('token');
