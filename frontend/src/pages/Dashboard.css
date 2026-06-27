@@ -96,6 +96,29 @@
   margin: 0;
 }
 
+.menu-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.save-menu-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.save-menu-btn:hover {
+  background: #1b5e20;
+}
+
 .recalc-btn {
   background: #e8f5e9;
   color: #2e7d32;

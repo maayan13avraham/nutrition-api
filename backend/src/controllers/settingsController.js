@@ -68,6 +68,7 @@ async function getProfile(req, res) {
       activityLevel: settings.activityLevel,
       allergies:     settings.allergies ? JSON.parse(settings.allergies) : [],
       vegetarianOnly: settings.vegetarianOnly || false,
+      savedMenu:     settings.savedMenu ? JSON.parse(settings.savedMenu) : null,
     });
   } catch (err) {
     fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
@@ -96,4 +97,16 @@ async function updateProfile(req, res) {
   }
 }
 
-module.exports = { getSettings, updateSettings, getProfile, updateProfile };
+async function saveDailyMenu(req, res) {
+  try {
+    const { menu } = req.body;
+    const settings = await UserSettings.findByPk(req.user.userId);
+    if (!settings) return fail(res, 'NOT_FOUND', 'Profile not found', {}, 404);
+    await settings.update({ savedMenu: menu ? JSON.stringify(menu) : null });
+    ok(res, { saved: true });
+  } catch (err) {
+    fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
+  }
+}
+
+module.exports = { getSettings, updateSettings, getProfile, updateProfile, saveDailyMenu };

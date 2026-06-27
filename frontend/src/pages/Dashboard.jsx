@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getRecipes, generateMenu } from '../services/recipesService';
-import { getProfile, updateProfile } from '../services/settingsService';
+import { getProfile, updateProfile, saveDailyMenu } from '../services/settingsService';
 import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -60,8 +60,11 @@ export default function Dashboard() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   // Stores user-chosen meal overrides; takes priority over the auto-picked default recipes
   const [overrides, setOverrides] = useState({});
+  const [menuSaved, setMenuSaved] = useState(false);
+  // Holds the savedMenu from DB so the generate effect can use it instead of calling the API
+  const savedMenuRef = useRef(null);
 
-  // On mount: load profile from DB; if found, skip questionnaire
+  // On mount: load profile from DB; if found, skip questionnaire. Capture savedMenu for use in generate effect.
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.userRole !== 'user') return;
@@ -69,6 +72,7 @@ export default function Dashboard() {
       .then(({ data }) => {
         if (data) {
           const calories = calcCalories(Number(data.age), Number(data.weight), Number(data.height), data.goal, data.activityLevel);
+          if (data.savedMenu) savedMenuRef.current = data.savedMenu;
           setProfile({ ...data, calories });
         }
       })
@@ -78,6 +82,12 @@ export default function Dashboard() {
   // Generate the primary menu via the backend whenever a profile is set or updated
   useEffect(() => {
     if (!profile) return;
+    if (savedMenuRef.current) {
+      setGeneratedMenu(savedMenuRef.current);
+      setOverrides({});
+      savedMenuRef.current = null;
+      return;
+    }
     setLoading(true);
     setFetchError('');
     setGeneratedMenu(null);
@@ -167,6 +177,20 @@ export default function Dashboard() {
     lunch:     displayedLunch?.recipeId,
     dinner:    displayedDinner?.recipeId,
   };
+
+  function handleSaveMenu() {
+    const menuToSave = {
+      breakfast: displayedBreakfast || null,
+      lunch:     displayedLunch     || null,
+      dinner:    displayedDinner    || null,
+    };
+    saveDailyMenu(menuToSave)
+      .then(() => {
+        setMenuSaved(true);
+        setTimeout(() => setMenuSaved(false), 2000);
+      })
+      .catch(() => {});
+  }
 
   // Replace the auto-selected recipe for a meal slot with the user's chosen recipe.
   // When in scaled mode, apply the same multiplier so the daily total stays correct.
@@ -300,16 +324,25 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-                {/* Clear the profile and overrides so the user can fill the questionnaire again */}
-                <button className="recalc-btn" onClick={() => {
-                  localStorage.removeItem(profileKey);
-                  setProfile(null);
-                  setRecipes([]);
-                  setGeneratedMenu(null);
-                  setOverrides({});
-                }}>
-                  {t.dashboard.recalc}
-                </button>
+                <div className="menu-actions">
+                  {/* Save current displayed menu (including any swaps) to DB */}
+                  {!loading && !fetchError && (displayedBreakfast || displayedLunch || displayedDinner) && (
+                    <button className="save-menu-btn" onClick={handleSaveMenu}>
+                      {menuSaved ? t.dashboard.menuSaved : t.dashboard.saveMenu}
+                    </button>
+                  )}
+                  {/* Clear the profile and overrides so the user can fill the questionnaire again */}
+                  <button className="recalc-btn" onClick={() => {
+                    localStorage.removeItem(profileKey);
+                    setProfile(null);
+                    setRecipes([]);
+                    setGeneratedMenu(null);
+                    setOverrides({});
+                    saveDailyMenu(null).catch(() => {});
+                  }}>
+                    {t.dashboard.recalc}
+                  </button>
+                </div>
               </div>
 
               {loading && <p className="loading-text">{t.dashboard.loading}</p>}

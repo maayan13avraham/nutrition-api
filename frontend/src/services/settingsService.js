@@ -21,3 +21,8 @@ export async function updateProfile(data) {
   const res = await api.put('/api/settings/profile', data);
   return res.data;
 }
+
+export async function saveDailyMenu(menu) {
+  const res = await api.put('/api/settings/saved-menu', { menu });
+  return res.data;
+}
