@@ -69,6 +69,7 @@ export default function NutritionistDashboard() {
 
   function dismissThread(userId) {
     setDismissed((prev) => new Set([...prev, String(userId)]));
+    localStorage.setItem('nutritionist_dismissed_at_' + userId, new Date().toISOString());
     if (String(selectedUserId) === String(userId)) setSelectedUserId(null);
   }
   const chatBottomRef = useRef(null);
@@ -90,6 +91,7 @@ export default function NutritionistDashboard() {
       const grouped = {};
       const loaded = new Set();
       const dbUnread = {};
+      const shouldRestore = {};
       data.data.forEach((m) => {
         const uid = m.userId;
         if (!grouped[uid]) grouped[uid] = { username: m.senderRole === 'user' ? m.senderName : `User ${uid}`, messages: [] };
@@ -101,10 +103,17 @@ export default function NutritionistDashboard() {
         });
         loaded.add(uid);
         if (m.senderRole === 'user') {
+          const msgTime = new Date(m.createdAt).getTime();
+          // Unread badge: messages after last time thread was opened
           const lastSeen = localStorage.getItem('nutritionist_thread_seen_' + uid);
           const threshold = lastSeen ? new Date(lastSeen).getTime() : fallbackTime;
-          if (new Date(m.createdAt).getTime() > threshold) {
+          if (msgTime > threshold) {
             dbUnread[uid] = (dbUnread[uid] || 0) + 1;
+          }
+          // Auto-restore from dismissed: only if message arrived AFTER avi dismissed this thread
+          const dismissedAt = localStorage.getItem('nutritionist_dismissed_at_' + uid);
+          if (dismissedAt && msgTime > new Date(dismissedAt).getTime()) {
+            shouldRestore[uid] = true;
           }
         }
       });
@@ -117,11 +126,14 @@ export default function NutritionistDashboard() {
         });
         return next;
       });
-      // Auto-restore threads with new messages from dismissed (mirrors socket behavior)
-      if (Object.keys(dbUnread).length > 0) {
+      // Auto-restore only threads that received a new message after their dismissal
+      if (Object.keys(shouldRestore).length > 0) {
         setDismissed((prev) => {
           const next = new Set(prev);
-          Object.keys(dbUnread).forEach((uid) => next.delete(uid));
+          Object.keys(shouldRestore).forEach((uid) => {
+            next.delete(uid);
+            localStorage.removeItem('nutritionist_dismissed_at_' + uid);
+          });
           return next;
         });
       }
