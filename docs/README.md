@@ -1,276 +1,227 @@
+# Smart Nutrition System
 
-## Setup & Run
+אפליקציה Full-Stack לניהול תזונה אישית — יצירת תפריט יומי מותאם, צ'אט AI, ותקשורת בזמן אמת עם תזונאי.
+
+🌐 **Production:** https://nutrition-backend-0sku.onrender.com
+
+---
+
+## Tech Stack
+
+| שכבה | טכנולוגיה |
+|------|-----------|
+| Frontend | React (CRA), Axios, Socket.io-client |
+| Backend | Node.js + Express |
+| Database | MySQL על AWS RDS + Sequelize ORM |
+| Real-time | Socket.io |
+| AI | Google Gemini API (SSE streaming) |
+| Deployment | Render — monorepo (backend מגיש את frontend build) |
+
+---
+
+## Features
+
+- **הרשמה/כניסה אוטומטית** — כניסה עם אימייל+סיסמה חדשים יוצרת משתמש אוטומטית (JWT)
+- **תפריט יומי מותאם** — שאלון תזונה (גיל, משקל, גובה, מטרה, אלרגיות) → תפריט breakfast/lunch/dinner + החלפת מנות
+- **פרופיל נשמר ב-DB** — בכניסה חוזרת מכל מכשיר, התפריט נטען אוטומטית ללא מילוי מחדש
+- **ניהול מתכונים (CRUD)** — תזונאי/אדמין יוצרים, עורכים ומוחקים מתכונים
+- **צ'אט AI** — שיחה עם Gemini בstreaming בזמן אמת לפי התפריט האישי
+- **צ'אט עם תזונאי** — Socket.io: משתמש שולח, תזונאי מקבל התראה בזמן אמת בכל ניווט
+- **הגדרות משתמש** — שם תצוגה, שפה (עברית/אנגלית), התראות דוא"ל
+- **ריבוי שפות** — ממשק מלא בעברית ואנגלית
+
+---
+
+## Roles & Permissions
+
+| תפקיד | גישה |
+|--------|------|
+| `user` | דשבורד, תפריט, צ'אט AI, צ'אט תזונאי, הגדרות |
+| `nutritionist` | ניהול מתכונים, צ'אט עם כל המשתמשים, הגדרות |
+| `admin` | הכל — כולל מחיקת מתכונים |
+
+---
+
+## API Endpoints
+
+### Auth — `/api/auth`
+| Method | Path | תיאור |
+|--------|------|-------|
+| POST | `/login` | כניסה — אם אימייל לא קיים, נרשם אוטומטית |
+| POST | `/logout` | יציאה |
+
+### Users — `/api/users`
+| Method | Path | תיאור | הרשאה |
+|--------|------|-------|-------|
+| GET | `/me` | פרטי המשתמש הנוכחי | כולם |
+| PUT | `/me` | עדכון אימייל/סיסמה | כולם |
+| GET | `/` | כל המשתמשים | admin, nutritionist |
+| DELETE | `/:id` | מחיקת משתמש | admin |
+
+### Recipes — `/api/recipes`
+| Method | Path | תיאור | הרשאה |
+|--------|------|-------|-------|
+| GET | `/` | כל המתכונים (עם פילטרים) | כולם |
+| GET | `/:id` | מתכון בודד | כולם |
+| POST | `/` | יצירת מתכון | admin, nutritionist |
+| PUT | `/:id` | עדכון מתכון | admin, nutritionist |
+| DELETE | `/:id` | מחיקת מתכון | admin |
+
+### Menu — `/api/menu`
+| Method | Path | תיאור |
+|--------|------|-------|
+| POST | `/generate` | יצירת תפריט יומי לפי פרופיל המשתמש |
+
+### Settings — `/api/settings`
+| Method | Path | תיאור |
+|--------|------|-------|
+| GET | `/` | הגדרות תצוגה (שם, שפה, התראות) |
+| PUT | `/` | עדכון הגדרות תצוגה |
+| GET | `/profile` | פרופיל תזונה (גובה, משקל, גיל וכו') |
+| PUT | `/profile` | שמירת פרופיל תזונה ב-DB |
+
+### AI — `/api/ai`
+| Method | Path | תיאור |
+|--------|------|-------|
+| POST | `/chat` | שליחת הודעה ל-Gemini — תגובה ב-SSE streaming |
+
+### Chat — `/api/chat`
+| Method | Path | תיאור | הרשאה |
+|--------|------|-------|-------|
+| GET | `/conversations` | כל שיחות התמיכה | nutritionist, admin |
+| GET | `/history/:userId` | היסטוריית שיחה עם משתמש ספציפי | nutritionist, admin, user (שלו בלבד) |
+
+---
+
+## WebSocket Events (Socket.io)
+
+| Event | כיוון | תיאור |
+|-------|-------|-------|
+| `support_message` | user → server | משתמש שולח הודעה לתזונאי |
+| `receive_support_message` | server → nutritionist | הודעה נכנסת לתזונאי |
+| `nutritionist_reply` | nutritionist → server | תשובת תזונאי למשתמש |
+| `private_message` | server → user | תשובה פרטית מהתזונאי |
+| `nutritionist_status_changed` | server → all | שינוי סטטוס זמינות תזונאי |
+| `nutritionist_going_offline` | nutritionist → server | הודעה לפני התנתקות |
+
+---
+
+## DB Schema
+
+### `users`
+| עמודה | סוג | תיאור |
+|-------|-----|-------|
+| userId | INT PK | מזהה |
+| firstName, lastName | VARCHAR | שם |
+| email | VARCHAR UNIQUE | אימייל |
+| password | VARCHAR | סיסמה מוצפנת (bcrypt) |
+| userRole | ENUM | `admin` / `nutritionist` / `user` |
+| createDate, updateDate | DATETIME | תאריכים |
+
+### `recipes`
+| עמודה | סוג |
+|-------|-----|
+| recipeId | INT PK |
+| name, description | VARCHAR/TEXT |
+| mealType | ENUM (`breakfast`, `lunch`, `dinner`) |
+| calories, protein, carbs, fat | INT |
+| isVegetarian | BOOLEAN |
+| allergens | JSON |
+| prepTime | INT (דקות) |
+
+### `user_settings`
+| עמודה | סוג | תיאור |
+|-------|-----|-------|
+| userId | INT PK | מפתח זר ל-users |
+| displayName, language | VARCHAR | הגדרות תצוגה |
+| emailNotifications | BOOLEAN | |
+| age, weight, height | INT/FLOAT | פרופיל תזונה |
+| goal | VARCHAR | `loss` / `gain` / `health` |
+| activityLevel | VARCHAR | רמת פעילות גופנית |
+| allergies | TEXT (JSON) | אלרגיות |
+| vegetarianOnly | BOOLEAN | |
+
+### `support_messages`
+| עמודה | סוג | תיאור |
+|-------|-----|-------|
+| messageId | INT PK | |
+| userId | INT | מזהה המשתמש בשיחה |
+| senderRole | ENUM | `user` / `nutritionist` |
+| senderId, senderName | INT/VARCHAR | שולח |
+| content | TEXT | תוכן ההודעה |
+| createdAt | DATETIME | |
+
+---
+
+## Local Setup
 
 ```bash
+# 1. Clone the repo
+git clone <repo-url>
+
+# 2. Backend
+cd backend
 npm install
+# צור קובץ .env:
+# DB_HOST=...  DB_USER=...  DB_PASSWORD=...  DB_NAME=nutrition
+# JWT_SECRET=your_secret
+# GEMINI_API_KEY=your_key
+# FRONTEND_URL=http://localhost:5173
 npm start
+# → http://localhost:3000
+
+# 3. Frontend (טאב נפרד)
+cd frontend
+npm install
+# צור קובץ .env:
+# REACT_APP_API_URL=http://localhost:3000
+npm start
+# → http://localhost:5173
 ```
-
-Server starts at: **http://localhost:3000**
-
-> Data resets on every server restart (in-memory only).
 
 ---
 
-## Authentication
+## Deployment (Render)
 
-This API uses a simulated role-based access system via a request header:
-
-```
-x-user-role: admin | nutritionist | user
-```
-
-Include this header in every request. If missing or unauthorized, the server returns `403 Forbidden`.
-
-### Role Permissions
-
-| Action | admin | nutritionist | user |
-|--------|-------|-------------|------|
-| GET list of users | YES | YES | NO |
-| GET single user | YES | YES | YES |
-| POST user | YES | NO | NO |
-| PUT user | YES | YES | YES |
-| DELETE user | YES | NO | NO |
-| GET recipes (all/one) | YES | YES | YES |
-| POST recipe | YES | YES | NO |
-| PUT recipe | YES | YES | NO |
-| DELETE recipe | YES | NO | NO |
+- **שרת אחד** מגיש גם backend וגם `frontend/build`
+- משתני סביבה מוגדרים ב-Render dashboard
+- לאחר כל שינוי frontend: `npm run build` → `git add frontend/build` → `git push`
+- Sequelize מריץ `sync({ alter: true })` בהפעלה — מוסיף עמודות חדשות אוטומטית
 
 ---
 
-## API Reference
+## Response Format
 
-### Users — `/users`
+כל תגובות ה-API עוטפות בפורמט אחיד:
 
-#### GET /users
-Returns all users.
-
-**Required role:** `admin` or `nutritionist`
-
-**Success response (200):**
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "userId": 1,
-      "firstName": "Maya",
-      "lastName": "Cohen",
-      "createDate": "2025-01-10T08:00:00Z",
-      "updateDate": "2025-01-10T08:00:00Z",
-      "userRole": "admin"
-    }
-  ],
+  "data": { ... },
   "error": null
 }
 ```
 
----
-
-#### GET /users/:id
-Returns a single user by ID.
-
-**Required role:** `admin`, `nutritionist`, or `user`
-
-**Success response (200):**
-```json
-{ "success": true, "data": { "userId": 1, ... }, "error": null }
-```
-
-**Error response (404):**
-```json
-{
-  "success": false,
-  "data": null,
-  "error": { "code": "NOT_FOUND", "message": "User with id 99 not found", "details": {} }
-}
-```
-
----
-
-#### POST /users
-Creates a new user.
-
-**Required role:** `admin`
-
-**Request body:**
-```json
-{
-  "firstName": "Oren",
-  "lastName": "Katz",
-  "userRole": "user"
-}
-```
-
-**Success response (201):**
-```json
-{ "success": true, "data": { "userId": 6 }, "error": null }
-```
-
-**Validation error (400):**
+שגיאה:
 ```json
 {
   "success": false,
   "data": null,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Missing required field: firstName",
+    "message": "First name is required",
     "details": { "field": "firstName" }
   }
 }
 ```
 
----
-
-#### PUT /users/:id
-Updates an existing user.
-
-**Required role:** `admin`, `nutritionist`, or `user`
-
-**Request body:** same as POST
-
-**Success response (200):**
-```json
-{ "success": true, "data": { "userId": 3 }, "error": null }
-```
-
----
-
-#### DELETE /users/:id
-Deletes a user by ID.
-
-**Required role:** `admin`
-
-**Success response (200):**
-```json
-{ "success": true, "data": { "userId": 3 }, "error": null }
-```
-
----
-
-### Recipes — `/recipes`
-
-#### GET /recipes
-Returns all recipes. Supports optional query filters.
-
-**Required role:** `admin`, `nutritionist`, or `user`
-
-**Query parameters:**
-| Param | Type | Example | Description |
-|-------|------|---------|-------------|
-| mealType | string | `breakfast` | Filter by meal type (`breakfast`, `lunch`, `dinner`) |
-| isVegetarian | boolean | `true` | Filter vegetarian recipes only |
-
-**Example:** `GET /recipes?mealType=breakfast&isVegetarian=true`
-
-**Success response (200):**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "recipeId": 1,
-      "name": "חביתה עם ירקות",
-      "description": "ארוחת בוקר קלה ומזינה עם ביצים וירקות טריים",
-      "mealType": "breakfast",
-      "calories": 350,
-      "protein": 20,
-      "carbs": 30,
-      "fat": 12,
-      "isVegetarian": true,
-      "allergens": ["eggs", "dairy"],
-      "prepTime": 15,
-      "createDate": "2025-01-10T08:00:00Z",
-      "updateDate": "2025-01-10T08:00:00Z"
-    }
-  ],
-  "error": null
-}
-```
-
----
-
-#### GET /recipes/:id
-Returns a single recipe by ID.
-
-**Required role:** `admin`, `nutritionist`, or `user`
-
----
-
-#### POST /recipes
-Creates a new recipe.
-
-**Required role:** `admin` or `nutritionist`
-
-**Request body:**
-```json
-{
-  "name": "סלט ירקות",
-  "description": "סלט טרי וקל",
-  "mealType": "lunch",
-  "calories": 200,
-  "protein": 5,
-  "carbs": 25,
-  "fat": 8,
-  "isVegetarian": true,
-  "allergens": [],
-  "prepTime": 10
-}
-```
-
-**Required fields:** `name`, `mealType`, `calories`, `protein`, `carbs`, `fat`
-
-**Success response (201):**
-```json
-{ "success": true, "data": { "recipeId": 7 }, "error": null }
-```
-
----
-
-#### PUT /recipes/:id
-Updates an existing recipe.
-
-**Required role:** `admin` or `nutritionist`
-
-**Request body:** same as POST
-
-**Success response (200):**
-```json
-{ "success": true, "data": { "recipeId": 2 }, "error": null }
-```
-
----
-
-#### DELETE /recipes/:id
-Deletes a recipe by ID.
-
-**Required role:** `admin`
-
-**Success response (200):**
-```json
-{ "success": true, "data": { "recipeId": 2 }, "error": null }
-```
-
----
-
-## HTTP Status Codes
-
-| Code | Meaning |
-|------|---------|
-| 200 | Successful GET / PUT / DELETE |
-| 201 | Successful POST (resource created) |
-| 400 | Validation error / missing required field |
-| 403 | Forbidden — missing or unauthorized role |
-| 404 | Resource not found |
-| 500 | Unexpected server error |
-
----
-
-## Assumptions
-
-- IDs are auto-incremented integers starting at 1.
-- All data is in-memory and resets on server restart.
-- Authentication is simulated via the `x-user-role` header.
-- `createDate` and `updateDate` are set automatically by the server.
-- `userRole` must be one of: `admin`, `nutritionist`, `user`.
-- `mealType` must be one of: `breakfast`, `lunch`, `dinner`.
+### HTTP Status Codes
+| Code | משמעות |
+|------|--------|
+| 200 | הצלחה |
+| 201 | נוצר בהצלחה |
+| 400 | שגיאת validation |
+| 401 | לא מאומת |
+| 403 | אין הרשאה |
+| 404 | לא נמצא |
+| 500 | שגיאת שרת |
