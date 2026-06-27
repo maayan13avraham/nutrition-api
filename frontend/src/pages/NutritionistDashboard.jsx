@@ -77,7 +77,7 @@ export default function NutritionistDashboard() {
           ...prev,
           [userId]: {
             username: prev[userId]?.username || `User ${userId}`,
-            messages: [...history, ...(prev[userId]?.messages ?? [])],
+            messages: history,
           },
         }));
         setLoadedThreads((prev) => new Set([...prev, userId]));
