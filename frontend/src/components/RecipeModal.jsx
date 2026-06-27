@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import './RecipeModal.css';
 
 // Full-screen overlay modal showing complete recipe details including ingredients and instructions
 export default function RecipeModal({ recipe, onClose }) {
   const { t } = useLanguage();
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   // Allow the user to close the modal by pressing the Escape key
   useEffect(() => {
@@ -31,9 +33,14 @@ export default function RecipeModal({ recipe, onClose }) {
           <button className="modal-close" onClick={onClose}>{t.modal.close} ✕</button>
         </div>
 
-        {recipe.imageUrl && (
-          <div className="modal-image">
-            <img src={recipe.imageUrl} alt={recipe.name} />
+        {recipe.imageUrl && !imgError && (
+          <div className={`modal-image ${imgLoaded ? 'loaded' : 'loading'}`}>
+            <img
+              src={recipe.imageUrl}
+              alt={recipe.name}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+            />
           </div>
         )}
         <div className="modal-body">

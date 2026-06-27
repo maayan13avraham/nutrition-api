@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import './Card.css';
 
 export default function Card({ mealType, name, calories, protein, carbs, fat, prepTime, isVegetarian, imageUrl, onClick }) {
   const { t } = useLanguage();
   const label = t.card.mealTypes[mealType] || mealType;
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div className="meal-card clickable" onClick={onClick}>
@@ -12,9 +14,15 @@ export default function Card({ mealType, name, calories, protein, carbs, fat, pr
         <span>{label}</span>
         {isVegetarian && <span className="veg-badge">🌱 {t.card.veg}</span>}
       </div>
-      {imageUrl && (
-        <div className="card-image">
-          <img src={imageUrl} alt={name} loading="lazy" />
+      {imageUrl && !imgError && (
+        <div className={`card-image ${imgLoaded ? 'loaded' : 'loading'}`}>
+          <img
+            src={imageUrl}
+            alt={name}
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+          />
         </div>
       )}
       <div className="meal-card-body">

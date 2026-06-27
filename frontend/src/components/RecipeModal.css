@@ -82,6 +82,17 @@
   height: 240px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
+  background: #F2E0DB;
+}
+
+.modal-image.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #F2E0DB 25%, #FBF7F4 50%, #F2E0DB 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 .modal-image img {
@@ -89,6 +100,12 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: opacity 0.4s;
+  opacity: 0;
+}
+
+.modal-image.loaded img {
+  opacity: 1;
 }
 
 .modal-body {
