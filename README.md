@@ -90,12 +90,20 @@ npm start
 # Server runs at http://localhost:3000
 ```
 
-#### 7. Start the frontend
+#### 7. Start the frontend (development)
 
 ```bash
 # From the frontend/ directory
-npm run dev
+npm start
 # App opens at http://localhost:5173
+```
+
+#### 8. Build the frontend (production)
+
+```bash
+# From the frontend/ directory
+npm run build
+# Output goes to frontend/build/ — served automatically by the backend
 ```
 
 ---
@@ -110,9 +118,8 @@ Log in to your MySQL server and run the schema file:
 mysql -u root -p < backend/migrations/schema.sql
 ```
 
-This creates the `nutrition` database and the six core tables:
-`users`, `admins`, `recipes`, `ingredients`, `user_favorite_recipes`, `user_settings`.
-The `support_messages` table is created automatically by `sequelize.sync()` when the backend server first starts.
+This creates the `nutrition` database and all seven core tables:
+`users`, `admins`, `recipes`, `ingredients`, `user_favorite_recipes`, `user_settings`, `support_messages`.
 
 ### Step 2 — Seed initial data (users + 6 base recipes)
 
@@ -158,6 +165,8 @@ Create `backend/.env` based on `backend/.env.example`:
 | `DB_NAME` | ✅ Yes | `nutrition` | MySQL database name (created by schema.sql) |
 | `JWT_SECRET` | ✅ Yes | `change_this_in_prod` | Secret key for signing JWT tokens (use a long random string) |
 | `PORT` | No | `3000` | Backend server port (defaults to 3000) |
+| `FRONTEND_URL` | No | `https://your-app.onrender.com` | Deployed frontend URL — added to CORS allowed origins |
+| `RENDER_EXTERNAL_URL` | No | `https://your-api.onrender.com` | Set automatically by Render — added to CORS allowed origins |
 
 > Do **not** commit your real `.env` file. It is excluded via `.gitignore`.
 
@@ -217,7 +226,7 @@ All responses follow the standard envelope format:
 { "success": false, "data": null, "error": { "code": "...", "message": "...", "details": {} } }
 ```
 
-All endpoints except `/api/auth/login` and `/api/auth/logout` require a JWT Bearer token in the `Authorization` header.
+All endpoints except `/api/auth/login`, `/api/auth/register`, and `/api/auth/logout` require a JWT Bearer token in the `Authorization` header.
 
 ### Using the Postman Collection
 
@@ -241,15 +250,23 @@ A ready-to-import collection covering all 35 requests is available at `docs/post
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
+| `POST` | `/api/auth/register` | Public | Register a new account with email + password (min 6 chars). Auto-extracts first/last name from email prefix. Returns JWT token. Error code: `EMAIL_TAKEN` if email already exists |
 | `POST` | `/api/auth/login` | Public | Login with email + password. Returns JWT token and user info. Distinct error codes: `USER_NOT_FOUND` vs `INVALID_PASSWORD` |
 | `POST` | `/api/auth/logout` | Public | Stateless logout (client clears the token) |
+
+> **Note:** The frontend login page uses a combined flow — it attempts login first, and if `USER_NOT_FOUND` is returned, it automatically calls `/api/auth/register` to create a new account. This means a single form handles both login and registration.
+
+**Register request body:**
+```json
+{ "email": "newuser@example.com", "password": "mypassword" }
+```
 
 **Login request body:**
 ```json
 { "email": "maya@example.com", "password": "123456789" }
 ```
 
-**Login success response `data`:**
+**Login/Register success response `data`:**
 ```json
 { "token": "eyJ...", "userId": 1, "firstName": "Maya", "lastName": "Cohen", "userRole": "admin" }
 ```
@@ -419,7 +436,8 @@ Every Socket.IO connection is authenticated server-side. The client passes the J
 
 ```js
 // Client (socketService.js)
-socket = io('http://localhost:3000', {
+const SOCKET_URL = process.env.REACT_APP_API_URL || window.location.origin;
+socket = io(SOCKET_URL, {
   auth: { token: localStorage.getItem('token') }
 });
 ```
@@ -472,7 +490,7 @@ The server verifies the token with `jwt.verify()` before accepting the connectio
     |-- support_message ---------> |                              |
     |                              |-- receive_support_message -> |
     |                              |                              |
-    |                              | <-- nutritionist_reply ------| 
+    |                              | <-- nutritionist_reply ------|
     | <-- private_message ---------|                              |
     |                              |                              |
 ```
@@ -536,8 +554,6 @@ The Groq free tier enforces request-per-minute limits. If the API returns a 429 
 |---|---|---|
 | 1 | **Plain-text passwords** — passwords are stored and compared without hashing. | Security risk; not production-ready. |
 | 2 | **No token revocation** — JWTs remain valid for 8 hours after logout. The `/api/auth/logout` endpoint is stateless and only clears the client-side token. | A stolen token cannot be invalidated. |
-| 3 | **No user self-registration** — there is no `POST /api/auth/register` endpoint. New accounts must be created by an admin via `POST /api/users`, or users may proceed as a "guest" (questionnaire only, no DB record). | New users cannot independently sign up. |
-| 4 | **`emailNotifications` is a UI toggle only** — the setting is persisted to the database but no email-sending infrastructure exists. | The feature is non-functional beyond saving the preference. |
-| 5 | **CORS locked to `localhost:5173`** — the CORS origin is hardcoded in `server.js`. | Deployment to any other domain requires a code change. |
-| 6 | **Activity level not persisted to the database** — the user's nutrition profile (age, weight, height, goal, activity level) is stored in `localStorage` only, not in any DB table. | Profile is lost if the user clears browser data or logs in on another device. |
-| 7 | **Portion-scaling fallback** — when no recipe combination fits within ±100 kcal of the calorie target, the system scales the three highest-calorie recipes proportionally. Swapped meals apply the same scale factor. Scaled portions may not match standard serving sizes. | Minor UX note. |
+| 3 | **`emailNotifications` is a UI toggle only** — the setting is persisted to the database but no email-sending infrastructure exists. | The feature is non-functional beyond saving the preference. |
+| 4 | **Activity level not persisted to the database** — the user's nutrition profile (age, weight, height, goal, activity level) is stored in `localStorage` only, not in any DB table. | Profile is lost if the user clears browser data or logs in on another device. |
+| 5 | **Portion-scaling fallback** — when no recipe combination fits within ±100 kcal of the calorie target, the system scales the three highest-calorie recipes proportionally. Scaled portions may not match standard serving sizes. | Minor UX note. |
