@@ -28,7 +28,7 @@ The **Smart Nutrition System** is a personalized meal-planning web application b
 | **Nutritionist** | Create and manage recipes in the database, monitor and reply to live user support messages via a WebSocket-powered chat panel |
 | **Admin** | Manage all user accounts (change roles, delete users), create and delete recipes |
 
-The system uses a **MySQL database** (via Sequelize ORM) for persistent storage of users, recipes, favorites, and settings; **Socket.IO** for real-time nutritionist support chat; and the **Groq API** (model: `llama-3.3-70b-versatile`) for a streaming AI nutrition assistant that is context-aware of the user's profile and daily menu.
+The system uses a **MySQL database** (via Sequelize ORM) for persistent storage of users, recipes, favorites, and settings; **Socket.IO** for real-time nutritionist support chat; the **Groq API** (model: `llama-3.3-70b-versatile`) for a streaming AI nutrition assistant that is context-aware of the user's profile and daily menu; and **Cloudinary CDN** for permanent, globally fast recipe images generated automatically via AI on every new recipe.
 
 ---
 
@@ -43,7 +43,7 @@ The system uses a **MySQL database** (via Sequelize ORM) for persistent storage 
 | MySQL | ≥ 8.0 | Database |
 | Git | any | Source control |
 
-You will also need a free **Groq API key** from [console.groq.com](https://console.groq.com).
+You will also need a free **Groq API key** from [console.groq.com](https://console.groq.com) and a free **Cloudinary account** from [cloudinary.com](https://cloudinary.com).
 
 ---
 
@@ -164,6 +164,9 @@ Create `backend/.env` based on `backend/.env.example`:
 | `DB_PASSWORD` | ✅ Yes | `your_password` | MySQL password |
 | `DB_NAME` | ✅ Yes | `nutrition` | MySQL database name (created by schema.sql) |
 | `JWT_SECRET` | ✅ Yes | `change_this_in_prod` | Secret key for signing JWT tokens (use a long random string) |
+| `CLOUDINARY_CLOUD_NAME` | ✅ Yes | `dhh4j5jbg` | Cloudinary cloud name for recipe image CDN storage |
+| `CLOUDINARY_API_KEY` | ✅ Yes | `123456...` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | ✅ Yes | `abc123...` | Cloudinary API secret |
 | `PORT` | No | `3000` | Backend server port (defaults to 3000) |
 | `FRONTEND_URL` | No | `https://your-app.onrender.com` | Deployed frontend URL — added to CORS allowed origins |
 | `RENDER_EXTERNAL_URL` | No | `https://your-api.onrender.com` | Set automatically by Render — added to CORS allowed origins |
@@ -209,7 +212,7 @@ The server calls `sequelize.sync()` on startup (non-destructive — does not dro
 |---|---|---|
 | `User.js` | `users` | userId, firstName, lastName, email, password, userRole (ENUM) |
 | `Admin.js` | `admins` | adminId, userId (FK), accessLevel |
-| `Recipe.js` | `recipes` | recipeId, name, mealType (ENUM), calories, protein, carbs, fat, isVegetarian, allergens (JSON), instructions (JSON), prepTime |
+| `Recipe.js` | `recipes` | recipeId, name, mealType (ENUM), calories, protein, carbs, fat, isVegetarian, allergens (JSON), instructions (JSON), prepTime, imageUrl (TEXT) |
 | `Ingredient.js` | `ingredients` | ingredientId, recipeId (FK), name, amount |
 | `UserFavoriteRecipe.js` | `user_favorite_recipes` | (userId, recipeId) composite PK |
 | `UserSettings.js` | `user_settings` | userId (PK/FK), displayName, language (ENUM: he/en), emailNotifications |
@@ -303,7 +306,7 @@ Supports query filters: `?mealType=breakfast|lunch|dinner` and `?isVegetarian=tr
 |---|---|---|---|
 | `GET` | `/api/recipes` | All roles | List all recipes (with ingredients). Supports `?mealType=` and `?isVegetarian=` filters |
 | `GET` | `/api/recipes/:id` | All roles | Get a single recipe with full ingredient list |
-| `POST` | `/api/recipes` | admin, nutritionist | Create a new recipe |
+| `POST` | `/api/recipes` | admin, nutritionist | Create a new recipe. Automatically generates an AI image (Groq → Pollinations.AI → Cloudinary) in the background; `imageUrl` is updated asynchronously within ~30-60 seconds |
 | `PUT` | `/api/recipes/:id` | admin, nutritionist | Update a recipe (replaces ingredient list entirely) |
 | `DELETE` | `/api/recipes/:id` | admin, nutritionist | Delete a recipe |
 
@@ -545,6 +548,18 @@ The backend builds a Hebrew system prompt for each request that injects:
 ### Rate Limiting
 
 The Groq free tier enforces request-per-minute limits. If the API returns a 429 response, the backend sends a `RATE_LIMIT_EXCEEDED` error code. The frontend (`AiChat.jsx`) detects this and displays a user-friendly "please wait 30 seconds" message in the current language.
+
+### Image Generation (Secondary Groq Use)
+
+Groq is also used during recipe creation to translate the Hebrew recipe name, ingredients, and meal type into a short English image prompt. The prompt is passed to Pollinations.AI (free AI image generation), and the resulting image is uploaded to Cloudinary CDN.
+
+| Step | Service | Output |
+|---|---|---|
+| 1 | Groq `llama-3.3-70b-versatile` | Short English image prompt (≤12 words) |
+| 2 | Pollinations.AI | Generated food photo |
+| 3 | Cloudinary SDK | Permanent CDN URL with auto-optimization (`f_auto,q_auto,w_400,h_280`) |
+
+The upload runs as a **fire-and-forget** background process — `POST /api/recipes` returns immediately with the `recipeId` without waiting for the image. The `imageUrl` field on the recipe is updated in the database once the upload completes (~30-60 seconds after creation).
 
 ---
 
