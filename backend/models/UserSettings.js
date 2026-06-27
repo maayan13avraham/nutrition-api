@@ -22,6 +22,13 @@ const UserSettings = sequelize.define('UserSettings', {
     allowNull: false,
     defaultValue: false,
   },
+  age:           { type: DataTypes.INTEGER,     allowNull: true },
+  weight:        { type: DataTypes.FLOAT,        allowNull: true },
+  height:        { type: DataTypes.FLOAT,        allowNull: true },
+  goal:          { type: DataTypes.STRING(20),   allowNull: true },
+  activityLevel: { type: DataTypes.STRING(20),   allowNull: true },
+  allergies:     { type: DataTypes.TEXT,         allowNull: true },
+  vegetarianOnly:{ type: DataTypes.BOOLEAN,      allowNull: true, defaultValue: false },
 }, {
   tableName: 'user_settings',
   timestamps: false,

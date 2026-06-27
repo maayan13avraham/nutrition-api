@@ -56,4 +56,44 @@ async function updateSettings(req, res) {
   }
 }
 
-module.exports = { getSettings, updateSettings };
+async function getProfile(req, res) {
+  try {
+    const settings = await UserSettings.findByPk(req.user.userId);
+    if (!settings || settings.age == null) return ok(res, null);
+    ok(res, {
+      age:           settings.age,
+      weight:        settings.weight,
+      height:        settings.height,
+      goal:          settings.goal,
+      activityLevel: settings.activityLevel,
+      allergies:     settings.allergies ? JSON.parse(settings.allergies) : [],
+      vegetarianOnly: settings.vegetarianOnly || false,
+    });
+  } catch (err) {
+    fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
+  }
+}
+
+async function updateProfile(req, res) {
+  try {
+    const { age, weight, height, goal, activityLevel, allergies, vegetarianOnly } = req.body;
+    await UserSettings.upsert({
+      userId: req.user.userId,
+      displayName: '',
+      language: 'he',
+      emailNotifications: false,
+      age: Number(age),
+      weight: Number(weight),
+      height: Number(height),
+      goal: goal || 'health',
+      activityLevel: activityLevel || 'moderate',
+      allergies: JSON.stringify(allergies || []),
+      vegetarianOnly: !!vegetarianOnly,
+    });
+    ok(res, { age, weight, height, goal, activityLevel, allergies, vegetarianOnly });
+  } catch (err) {
+    fail(res, 'INTERNAL_ERROR', err.message, {}, 500);
+  }
+}
+
+module.exports = { getSettings, updateSettings, getProfile, updateProfile };

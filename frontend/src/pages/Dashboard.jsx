@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getRecipes, generateMenu } from '../services/recipesService';
+import { getProfile, updateProfile } from '../services/settingsService';
 import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -59,6 +60,20 @@ export default function Dashboard() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   // Stores user-chosen meal overrides; takes priority over the auto-picked default recipes
   const [overrides, setOverrides] = useState({});
+
+  // On mount: load profile from DB; if found, skip questionnaire
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.userRole !== 'user') return;
+    getProfile()
+      .then(({ data }) => {
+        if (data) {
+          const calories = calcCalories(Number(data.age), Number(data.weight), Number(data.height), data.goal, data.activityLevel);
+          setProfile({ ...data, calories });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Generate the primary menu via the backend whenever a profile is set or updated
   useEffect(() => {
@@ -120,6 +135,7 @@ export default function Dashboard() {
     const newProfile = { ...form, calories };
     localStorage.setItem(profileKey, JSON.stringify(newProfile));
     setProfile(newProfile);
+    updateProfile(form).catch(() => {});
   }
 
   // Derive compatible recipes for the swap table; meals come from backend-generated menu
