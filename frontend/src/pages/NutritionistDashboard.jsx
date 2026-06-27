@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { createRecipe } from '../services/recipesService';
-import { connect, sendNutritionistReply } from '../services/socketService';
+import { connect, sendNutritionistReply, setDashboardMounted, flushPendingMessages } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import './NutritionistDashboard.css';
@@ -41,9 +41,10 @@ export default function NutritionistDashboard() {
 
   // Connect to socket and listen for incoming user support messages
   useEffect(() => {
+    setDashboardMounted(true);
     const socket = connect();
 
-    socket.on('receive_support_message', ({ userId, username, content, timestamp }) => {
+    const handleMessage = ({ userId, username, content, timestamp }) => {
       setThreads((prev) => {
         const thread = prev[userId] || { username, messages: [] };
         return {
@@ -54,10 +55,16 @@ export default function NutritionistDashboard() {
       if (selectedUserIdRef.current !== String(userId)) {
         setUnread((prev) => ({ ...prev, [userId]: (prev[userId] || 0) + 1 }));
       }
-    });
+    };
+
+    // Flush messages that arrived while dashboard was unmounted
+    flushPendingMessages().forEach(handleMessage);
+
+    socket.on('receive_support_message', handleMessage);
 
     return () => {
-      socket.off('receive_support_message');
+      socket.off('receive_support_message', handleMessage);
+      setDashboardMounted(false);
     };
   }, []);
 

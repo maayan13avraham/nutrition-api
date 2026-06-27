@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getMe } from '../services/usersService';
 import { logout } from '../services/authService';
-import { connect, disconnect as disconnectSocket, notifyNutritionistOffline } from '../services/socketService';
+import { connect, disconnect as disconnectSocket, notifyNutritionistOffline, bufferIfNeeded } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import './Navbar.css';
 
@@ -27,7 +27,8 @@ export default function Navbar() {
   useEffect(() => {
     if (userRole !== 'nutritionist') return;
     const socket = connect();
-    const handler = () => {
+    const handler = (msg) => {
+      bufferIfNeeded(msg);
       if (location.pathname !== '/nutritionist') {
         setUnreadMessages((prev) => prev + 1);
       }

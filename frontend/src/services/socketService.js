@@ -5,6 +5,14 @@ export const SUPPORT_ROOM = 'nutrition_support';
 
 let socket = null;
 
+// Buffer for support messages that arrive while NutritionistDashboard is unmounted
+let dashboardMounted = false;
+const pendingMessages = [];
+
+export function setDashboardMounted(val) { dashboardMounted = val; }
+export function bufferIfNeeded(msg) { if (!dashboardMounted) pendingMessages.push(msg); }
+export function flushPendingMessages() { const msgs = [...pendingMessages]; pendingMessages.length = 0; return msgs; }
+
 export function connect() {
   if (socket?.connected) return socket;
   const token = localStorage.getItem('token');
