@@ -10,6 +10,11 @@ const pendingMessages = [];
 let dashboardHandler = null;
 let badgeHandler = null;
 
+// Cache: survives NutritionistDashboard unmount/remount within the same browser session
+export let threadCache = {};
+export let unreadCache = {};
+export let loadedThreadsCache = new Set();
+
 export function registerDashboardHandler(fn) {
   dashboardHandler = fn;
   const msgs = [...pendingMessages];

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { createRecipe } from '../services/recipesService';
-import { connect, sendNutritionistReply, registerDashboardHandler, unregisterDashboardHandler } from '../services/socketService';
+import { connect, sendNutritionistReply, registerDashboardHandler, unregisterDashboardHandler, threadCache, unreadCache, loadedThreadsCache } from '../services/socketService';
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import './NutritionistDashboard.css';
@@ -26,11 +26,33 @@ export default function NutritionistDashboard() {
 
   // ── Support panel state ────────────────────────────────────
   // threads: { [userId]: { username, messages: [{ self, from?, content, timestamp }] } }
-  const [threads, setThreads] = useState({});
+  const [threads, setThreadsState] = useState(() => threadCache);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [unread, setUnread] = useState({});
+  const [unread, setUnreadState] = useState(() => unreadCache);
   const [replyInput, setReplyInput] = useState('');
-  const [loadedThreads, setLoadedThreads] = useState(new Set());
+  const [loadedThreads, setLoadedThreadsState] = useState(() => loadedThreadsCache);
+
+  function setThreads(updater) {
+    setThreadsState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      threadCache = next;
+      return next;
+    });
+  }
+  function setUnread(updater) {
+    setUnreadState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      unreadCache = next;
+      return next;
+    });
+  }
+  function setLoadedThreads(updater) {
+    setLoadedThreadsState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      loadedThreadsCache = next;
+      return next;
+    });
+  }
   const chatBottomRef = useRef(null);
   const selectedUserIdRef = useRef(null);
 
