@@ -87,6 +87,7 @@ export default function NutritionistDashboard() {
       if (!data.success) { setConvError(true); setConvLoading(false); return; }
       const grouped = {};
       const loaded = new Set();
+      const dbUnread = {};
       data.data.forEach((m) => {
         const uid = m.userId;
         if (!grouped[uid]) grouped[uid] = { username: m.senderRole === 'user' ? m.senderName : `User ${uid}`, messages: [] };
@@ -97,9 +98,18 @@ export default function NutritionistDashboard() {
           timestamp: m.createdAt,
         });
         loaded.add(uid);
+        if (m.senderRole === 'user') dbUnread[uid] = (dbUnread[uid] || 0) + 1;
       });
       setThreads(grouped);
       setLoadedThreads(loaded);
+      // Mark user messages from DB as unread for threads not yet tracked this session
+      setUnread((prev) => {
+        const next = { ...prev };
+        Object.keys(dbUnread).forEach((uid) => {
+          if (!prev[uid]) next[uid] = dbUnread[uid];
+        });
+        return next;
+      });
       setConvLoading(false);
     }).catch(() => { setConvError(true); setConvLoading(false); });
   }
