@@ -59,6 +59,9 @@ export default function SettingsPage() {
       await updateSettings(form);
       switchLanguage(form.language);
       setProfileSuccess(t.settings.success);
+      const stored = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...stored, firstName: form.firstName.trim() }));
+      window.dispatchEvent(new Event('userNameUpdated'));
     } catch {
       setProfileError(t.settings.errSave);
     } finally {

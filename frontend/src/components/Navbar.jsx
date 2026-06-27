@@ -22,6 +22,16 @@ export default function Navbar() {
       .catch(() => {});
   }, []);
 
+  // Update greeting immediately when user saves their name in Settings
+  useEffect(() => {
+    const handler = () => {
+      const stored = JSON.parse(localStorage.getItem('user') || '{}');
+      if (stored.firstName) setUserName(stored.firstName);
+    };
+    window.addEventListener('userNameUpdated', handler);
+    return () => window.removeEventListener('userNameUpdated', handler);
+  }, []);
+
   // For nutritionists: register badge handler to count messages arriving on any page
   useEffect(() => {
     if (userRole !== 'nutritionist') return;
