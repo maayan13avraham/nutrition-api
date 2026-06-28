@@ -146,6 +146,7 @@ export default function Dashboard() {
     localStorage.setItem(profileKey, JSON.stringify(newProfile));
     setProfile(newProfile);
     updateProfile(form).catch(() => {});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Derive compatible recipes for the swap table; meals come from backend-generated menu
