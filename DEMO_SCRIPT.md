@@ -195,16 +195,6 @@ LIMIT 5;
 ```
 > מראה: המתכונים שסומנו בלייק — טבלת junction עם userId + recipeId
 
-### שאילתה 5 — הודעות WebSocket שנשמרו
-```sql
-SELECT m.content, m.senderRole, u.email, m.createdAt
-FROM support_messages m
-JOIN users u ON m.userId = u.userId
-ORDER BY m.createdAt DESC
-LIMIT 3;
-```
-> מראה: ההודעות מהצ'אט עם התזונאי
-
 ---
 
 ## פיצ'ר נוסף — התאמת קלוריות אישית (Scaling)
