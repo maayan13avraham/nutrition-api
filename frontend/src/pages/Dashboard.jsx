@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getRecipes, generateMenu } from '../services/recipesService';
 import { getProfile, updateProfile, saveDailyMenu } from '../services/settingsService';
+import { getFavorites, addFavorite, removeFavorite } from '../services/usersService';
 import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -61,6 +62,8 @@ export default function Dashboard() {
   // Stores user-chosen meal overrides; takes priority over the auto-picked default recipes
   const [overrides, setOverrides] = useState({});
   const [menuSaved, setMenuSaved] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   // Holds the savedMenu from DB so the generate effect can use it instead of calling the API
   const savedMenuRef = useRef(null);
 
@@ -111,6 +114,32 @@ export default function Dashboard() {
     if (!profile) return;
     getRecipes().then((res) => setRecipes(res.data || [])).catch(() => {});
   }, [profile]);
+
+  // Load favorites for the current user (only relevant for 'user' role)
+  useEffect(() => {
+    if (!profile || currentUser.userRole !== 'user') return;
+    getFavorites().then((res) => {
+      setFavoriteIds(new Set((res.data || []).map(r => r.recipeId)));
+    }).catch(() => {});
+  }, [profile]);
+
+  async function toggleFavorite(recipeId) {
+    const isFav = favoriteIds.has(recipeId);
+    setFavoriteIds(prev => {
+      const next = new Set(prev);
+      isFav ? next.delete(recipeId) : next.add(recipeId);
+      return next;
+    });
+    try {
+      isFav ? await removeFavorite(recipeId) : await addFavorite(recipeId);
+    } catch {
+      setFavoriteIds(prev => {
+        const next = new Set(prev);
+        isFav ? next.add(recipeId) : next.delete(recipeId);
+        return next;
+      });
+    }
+  }
 
   // Validate age, weight, and height ranges before calculating the calorie target
   function validateForm() {
@@ -221,6 +250,11 @@ export default function Dashboard() {
     setOverrides((prev) => ({ ...prev, [recipe.mealType]: final }));
   }
 
+  const isUserRole = currentUser.userRole === 'user';
+  const tableRows = showOnlyFavorites
+    ? compatibleRecipes.filter(r => favoriteIds.has(r.recipeId))
+    : compatibleRecipes;
+
   // Column definitions for the compatible recipes table including the swap action column
   const tableColumns = [
     { key: 'name', label: t.table.name },
@@ -230,10 +264,21 @@ export default function Dashboard() {
     { key: 'carbs', label: t.table.carbs },
     { key: 'fat', label: t.table.fat },
     { key: 'isVegetarian', label: t.table.vegetarian, render: (v) => (v ? '✅' : '❌') },
+    ...(isUserRole ? [{
+      key: '_fav',
+      label: '❤️',
+      render: (_, row) => (
+        <button
+          className={`fav-row-btn ${favoriteIds.has(row.recipeId) ? 'favorited' : ''}`}
+          onClick={() => toggleFavorite(row.recipeId)}
+        >
+          {favoriteIds.has(row.recipeId) ? '❤️' : '🤍'}
+        </button>
+      ),
+    }] : []),
     {
       key: '_action',
       label: t.table.swapLabel,
-      // Show a "current" badge for the active recipe or a swap button for all other compatible options
       render: (_, row) => {
         const isCurrent = currentIds[row.mealType] === row.recipeId;
         return isCurrent
@@ -246,7 +291,12 @@ export default function Dashboard() {
   return (
     <div className="page-layout">
       <Navbar />
-      <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
+      <RecipeModal
+        recipe={selectedRecipe}
+        onClose={() => setSelectedRecipe(null)}
+        isFavorited={selectedRecipe ? favoriteIds.has(selectedRecipe.recipeId) : false}
+        onToggleFavorite={toggleFavorite}
+      />
       <main className="dashboard-main">
         {!profile ? (
           // Phase 1: show the questionnaire if no profile exists yet
@@ -381,12 +431,24 @@ export default function Dashboard() {
 
             {/* Table listing all compatible recipes with nutritional data and swap controls */}
             <section className="table-section">
-              <h3>{t.dashboard.tableTitle}</h3>
+              <div className="table-section-header">
+                <h3>{t.dashboard.tableTitle}</h3>
+                {isUserRole && (
+                  <button
+                    className={`filter-fav-btn ${showOnlyFavorites ? 'active' : ''}`}
+                    onClick={() => setShowOnlyFavorites(v => !v)}
+                  >
+                    {showOnlyFavorites ? '❤️ מועדפים בלבד' : '🤍 הצג מועדפים'}
+                  </button>
+                )}
+              </div>
               {loading
                 ? <p className="loading-text">{t.dashboard.loading}</p>
+                : tableRows.length === 0 && showOnlyFavorites
+                ? <p className="loading-text">עוד לא סימנת מועדפים — לחצ/י ❤️ בטבלה כדי להוסיף</p>
                 : <Table
                     columns={tableColumns}
-                    rows={compatibleRecipes}
+                    rows={tableRows}
                     getRowClass={(row) => currentIds[row.mealType] === row.recipeId ? 'row-highlighted' : ''}
                   />}
             </section>
