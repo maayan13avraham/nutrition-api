@@ -263,7 +263,6 @@ export default function Dashboard() {
     { key: 'protein', label: t.table.protein },
     { key: 'carbs', label: t.table.carbs },
     { key: 'fat', label: t.table.fat },
-    { key: 'isVegetarian', label: t.table.vegetarian, render: (v) => (v ? '✅' : '❌') },
     ...(isUserRole ? [{
       key: '_fav',
       label: '❤️',
