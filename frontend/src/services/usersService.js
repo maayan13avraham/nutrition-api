@@ -29,3 +29,18 @@ export async function deleteUser(id) {
   const res = await api.delete(`/api/users/${id}`);
   return res.data;
 }
+
+export async function getFavorites() {
+  const res = await api.get('/api/users/me/favorites');
+  return res.data;
+}
+
+export async function addFavorite(recipeId) {
+  const res = await api.post(`/api/users/me/favorites/${recipeId}`);
+  return res.data;
+}
+
+export async function removeFavorite(recipeId) {
+  const res = await api.delete(`/api/users/me/favorites/${recipeId}`);
+  return res.data;
+}

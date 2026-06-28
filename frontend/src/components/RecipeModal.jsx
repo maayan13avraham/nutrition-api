@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { getFavorites, addFavorite, removeFavorite } from '../services/usersService';
 import './RecipeModal.css';
+
+const currentUser = () => JSON.parse(localStorage.getItem('user') || '{}');
 
 // Full-screen overlay modal showing complete recipe details including ingredients and instructions
 export default function RecipeModal({ recipe, onClose }) {
   const { t } = useLanguage();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+
+  const isUser = currentUser().userRole === 'user';
 
   // Allow the user to close the modal by pressing the Escape key
   useEffect(() => {
@@ -14,6 +21,32 @@ export default function RecipeModal({ recipe, onClose }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Check if this recipe is already in the user's favorites
+  useEffect(() => {
+    if (!recipe || !isUser) return;
+    getFavorites()
+      .then(res => {
+        const ids = (res.data || []).map(r => r.recipeId);
+        setIsFavorited(ids.includes(recipe.recipeId));
+      })
+      .catch(() => {});
+  }, [recipe?.recipeId]);
+
+  async function toggleFavorite() {
+    if (favLoading) return;
+    setFavLoading(true);
+    try {
+      if (isFavorited) {
+        await removeFavorite(recipe.recipeId);
+        setIsFavorited(false);
+      } else {
+        await addFavorite(recipe.recipeId);
+        setIsFavorited(true);
+      }
+    } catch {}
+    setFavLoading(false);
+  }
 
   // Render nothing when no recipe is selected
   if (!recipe) return null;
@@ -30,7 +63,19 @@ export default function RecipeModal({ recipe, onClose }) {
             <span className="modal-meal-type">{mealLabel}</span>
             <h2 className="modal-title">{recipe.name}</h2>
           </div>
-          <button className="modal-close" onClick={onClose}>{t.modal.close} ✕</button>
+          <div className="modal-header-actions">
+            {isUser && (
+              <button
+                className={`modal-fav-btn ${isFavorited ? 'favorited' : ''}`}
+                onClick={toggleFavorite}
+                disabled={favLoading}
+                title={isFavorited ? 'הסר ממועדפים' : 'הוסף למועדפים'}
+              >
+                {isFavorited ? '❤️' : '🤍'}
+              </button>
+            )}
+            <button className="modal-close" onClick={onClose}>{t.modal.close} ✕</button>
+          </div>
         </div>
 
         {recipe.imageUrl && !imgError && (
