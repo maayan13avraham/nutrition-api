@@ -79,6 +79,11 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
+  // Scroll to top whenever the dashboard switches from questionnaire to menu view
+  useEffect(() => {
+    if (profile) window.scrollTo(0, 0);
+  }, [profile]);
+
   // Generate the primary menu via the backend whenever a profile is set or updated
   useEffect(() => {
     if (!profile) return;
@@ -146,7 +151,6 @@ export default function Dashboard() {
     localStorage.setItem(profileKey, JSON.stringify(newProfile));
     setProfile(newProfile);
     updateProfile(form).catch(() => {});
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Derive compatible recipes for the swap table; meals come from backend-generated menu
