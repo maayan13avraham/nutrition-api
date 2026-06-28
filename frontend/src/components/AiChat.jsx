@@ -46,7 +46,9 @@ export default function AiChat({ profile, menu }) {
   useEffect(() => { menuRef.current = menu; }, [menu]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   function extractMeal(recipe) {
