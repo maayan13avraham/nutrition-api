@@ -66,6 +66,12 @@
   margin-top: 4px;
 }
 
+.scaled-ingredients-note {
+  color: #7A9FB5;
+  font-size: 0.8rem;
+  margin: 4px 0 10px;
+}
+
 .modal-fav-btn {
   background: rgba(255, 255, 255, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.5);

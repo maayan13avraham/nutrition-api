@@ -4,8 +4,22 @@ import './RecipeModal.css';
 
 const currentUser = () => JSON.parse(localStorage.getItem('user') || '{}');
 
+const CONTINUOUS_UNITS = ['g', 'גרם', 'מל', 'ליטר', 'כוס', 'כף', 'כפית', 'ק"ג', 'kg', 'ml'];
+
+function scaleAmount(amountStr, factor) {
+  if (!amountStr || !factor || factor === 1) return amountStr;
+  const match = amountStr.match(/^(\d+\.?\d*)/);
+  if (!match) return amountStr;
+  const num = parseFloat(match[1]);
+  const rest = amountStr.slice(match[0].length);
+  const scaled = num * factor;
+  const isContinuous = CONTINUOUS_UNITS.some(u => rest.trimStart().startsWith(u));
+  const rounded = isContinuous ? Math.round(scaled * 10) / 10 : Math.round(scaled);
+  return `${rounded}${rest}`;
+}
+
 // Full-screen overlay modal showing complete recipe details including ingredients and instructions
-export default function RecipeModal({ recipe, onClose, isFavorited = false, onToggleFavorite }) {
+export default function RecipeModal({ recipe, onClose, isFavorited = false, onToggleFavorite, scaleFactor }) {
   const { t } = useLanguage();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -80,11 +94,16 @@ export default function RecipeModal({ recipe, onClose, isFavorited = false, onTo
 
           <div className="modal-section">
             <h3>🧅 {t.modal.ingredients}</h3>
+            {scaleFactor && scaleFactor !== 1 && (
+              <p className="scaled-ingredients-note">
+                * כמויות מותאמות לפי ×{scaleFactor.toFixed(1)} מהמתכון הבסיסי
+              </p>
+            )}
             <ul className="ingredients-list">
               {recipe.ingredients && recipe.ingredients.map((ing, i) => (
                 <li key={i}>
                   <span className="ing-name">{ing.name}</span>
-                  <span className="ing-amount">{ing.amount}</span>
+                  <span className="ing-amount">{scaleAmount(ing.amount, scaleFactor)}</span>
                 </li>
               ))}
             </ul>

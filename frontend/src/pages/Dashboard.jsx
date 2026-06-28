@@ -296,6 +296,7 @@ export default function Dashboard() {
         onClose={() => setSelectedRecipe(null)}
         isFavorited={selectedRecipe ? favoriteIds.has(selectedRecipe.recipeId) : false}
         onToggleFavorite={toggleFavorite}
+        scaleFactor={scaleInfo?.factor}
       />
       <main className="dashboard-main">
         {!profile ? (
@@ -414,6 +415,11 @@ export default function Dashboard() {
               {loading && <p className="loading-text">{t.dashboard.loading}</p>}
               {fetchError && <p className="error-text">{fetchError}</p>}
               {/* Render one Card per meal slot, falling back to a placeholder if no recipe matches */}
+              {scaleInfo && (
+                <div className="scaled-info-banner">
+                  ℹ️ התפריט מותאם לצרכיך — הקלוריות מחושבות לפי ×{scaleInfo.factor.toFixed(1)} מהמנה הסטנדרטית
+                </div>
+              )}
               {!loading && !fetchError && (
                 <div className="cards-row">
                   {displayedBreakfast
@@ -432,7 +438,10 @@ export default function Dashboard() {
             {/* Table listing all compatible recipes with nutritional data and swap controls */}
             <section className="table-section">
               <div className="table-section-header">
-                <h3>{t.dashboard.tableTitle}</h3>
+                <div>
+                  <h3>{t.dashboard.tableTitle}</h3>
+                  <p className="table-subtitle">* ערכים תזונתיים לפי מנה סטנדרטית</p>
+                </div>
                 {isUserRole && (
                   <button
                     className={`filter-fav-btn ${showOnlyFavorites ? 'active' : ''}`}
